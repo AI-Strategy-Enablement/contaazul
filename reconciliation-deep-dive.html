@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conta Azul API - Bank Reconciliation Deep Dive</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1923; color: #e0e6ed; min-height: 100vh; overflow-x: hidden;
+  }
+  header { text-align: center; padding: 32px 20px 8px; }
+  header h1 {
+    font-size: 28px; font-weight: 700;
+    background: linear-gradient(135deg, #ff9800, #ffc107, #ff9800);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  header p { color: #7a8fa6; font-size: 14px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+  /* Verdict banner */
+  .verdict {
+    margin: 24px auto; max-width: 1100px; padding: 20px 24px;
+    background: linear-gradient(135deg, #1f1d15, #1a2230);
+    border: 1px solid #ff980044; border-radius: 12px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .verdict-score { font-size: 48px; font-weight: 800; color: #ff9800; min-width: 100px; text-align: center; flex-shrink: 0; }
+  .verdict-text { min-width: 0; }
+  .verdict-text h2 { font-size: 18px; color: #ff9800; margin-bottom: 6px; }
+  .verdict-text p { color: #9ab; font-size: 14px; line-height: 1.7; }
+
+  /* Data model diagram */
+  .diagram { margin: 32px auto; max-width: 1100px; padding: 0 20px; }
+  .diagram h2 { font-size: 20px; color: #b0c4d8; margin-bottom: 16px; }
+  svg.model { width: 100%; height: auto; display: block; }
+
+  /* Section */
+  .section { max-width: 1100px; margin: 0 auto; padding: 32px 20px 0; }
+  .section h2 { font-size: 20px; color: #b0c4d8; margin-bottom: 16px; border-bottom: 1px solid #1a2735; padding-bottom: 8px; }
+  .section h3 { font-size: 16px; color: #e0e6ed; margin: 20px 0 10px; }
+
+  /* Cards grid */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .card {
+    background: #152230; border-radius: 10px; padding: 18px; border: 1px solid #2a3f55;
+  }
+  .card.available { border-color: #4caf5044; }
+  .card.readonly { border-color: #ff980044; }
+  .card.missing { border-color: #f4433644; }
+  .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .card-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .card-dot.green { background: #4caf50; }
+  .card-dot.orange { background: #ff9800; }
+  .card-dot.red { background: #f44336; }
+  .card h4 { font-size: 14px; color: #e0e6ed; }
+  .card p { font-size: 13px; color: #9ab; line-height: 1.5; }
+  .card code {
+    font-family: 'SF Mono', Consolas, monospace; font-size: 11px;
+    color: #4fc3f7; background: #12222e; padding: 2px 6px; border-radius: 3px;
+  }
+  .card a { text-decoration: none; }
+  .card a code:hover { background: #1a3a4e; color: #81d4fa; text-decoration: underline; }
+
+  /* Schema table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
+  th { text-align: left; padding: 10px 12px; background: #1a2735; color: #7a8fa6; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; }
+  td { padding: 10px 12px; border-bottom: 1px solid #1a2735; vertical-align: top; }
+  td code { font-family: 'SF Mono', Consolas, monospace; font-size: 11px; color: #4fc3f7; background: #12222e; padding: 2px 6px; border-radius: 3px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge.read { background: #4caf5022; color: #4caf50; border: 1px solid #4caf5044; }
+  .badge.readonly { background: #ff980022; color: #ff9800; border: 1px solid #ff980044; }
+  .badge.none { background: #f4433622; color: #f44336; border: 1px solid #f4433644; }
+
+  /* Enum list */
+  .enum-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .enum-tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: #12222e; color: #7a8fa6; font-family: 'SF Mono', Consolas, monospace; }
+  .enum-tag.highlight { color: #ff9800; background: #1f1d15; border: 1px solid #ff980033; }
+
+  /* Workaround section */
+  .workaround { background: #152230; border-radius: 10px; padding: 20px; border-left: 3px solid #4fc3f7; margin: 16px 0; }
+  .workaround h4 { color: #4fc3f7; font-size: 14px; margin-bottom: 8px; }
+  .workaround p, .workaround li { font-size: 13px; color: #9ab; line-height: 1.6; }
+  .workaround ol { padding-left: 20px; }
+  .workaround li { margin-bottom: 4px; }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, #2a3f55, transparent); max-width: 1100px; margin: 40px auto; }
+
+  /* Link back */
+  .back-link { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; }
+  .back-link a { color: #4fc3f7; text-decoration: none; font-size: 13px; }
+  .back-link a:hover { text-decoration: underline; }
+
+  /* Navigation */
+  nav {
+    background: #152230; border-bottom: 1px solid #2a3f55; padding: 10px 20px;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 200;
+  }
+  nav a {
+    color: #7a8fa6; text-decoration: none; font-size: 13px; padding: 6px 14px;
+    border-radius: 8px; transition: background 0.2s, color 0.2s; white-space: nowrap;
+  }
+  nav a:hover { background: #1a2735; color: #e0e6ed; }
+  nav a.active { background: #29b6f622; color: #29b6f6; font-weight: 600; }
+  nav .nav-brand { color: #4fc3f7; font-weight: 700; font-size: 14px; margin-right: 10px; }
+</style>
+</head>
+<body>
+<nav>
+  <span class="nav-brand">Conta Azul</span>
+  <a href="flows.html">Overview</a>
+  <a href="ap-flow.html">AP Flow</a>
+  <a href="ar-flow.html">AR Flow</a>
+  <a href="reconciliation-deep-dive.html" class="active">Reconciliation</a>
+  <a href="business-insights.html">Business Insights</a>
+</nav>
+
+<header>
+  <h1>Bank Reconciliation &mdash; Deep Dive</h1>
+  <p>Complete analysis of reconciliation capabilities across Conta Azul API specifications</p>
+</header>
+
+<div class="container">
+  <div class="verdict">
+    <div class="verdict-score">~60%</div>
+    <div class="verdict-text">
+      <h2>Native Integration + Read-Only API</h2>
+      <p>Conta Azul handles bank statement import and transaction matching <strong>natively</strong> via automatic banking integration with 13+ Brazilian banks. The API exposes rich reconciliation <em>data</em> (flags, IDs, origins, balances) but provides <strong>no write endpoints</strong> for reconciliation operations. The real gap is narrower than it first appears: you can't drive matching via API, but you don't need to &mdash; Conta Azul already does it automatically.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Data Model Diagram -->
+<div class="diagram">
+  <h2>Reconciliation Data Model</h2>
+  <svg class="model" viewBox="0 0 1160 680" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="g-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur"/><feFlood flood-color="#4caf50" flood-opacity="0.25"/>
+        <feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="o-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur"/><feFlood flood-color="#ff9800" flood-opacity="0.25"/>
+        <feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="r-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur"/><feFlood flood-color="#f44336" flood-opacity="0.25"/>
+        <feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <marker id="arr" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#3a5068"/>
+      </marker>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2735" stroke-width="0.5"/>
+      </pattern>
+    </defs>
+    <rect width="1160" height="680" fill="url(#grid)" opacity="0.5"/>
+
+    <!-- ContaFinanceira (Bank Account) - READ -->
+    <g filter="url(#g-glow)">
+      <rect x="10" y="20" width="330" height="220" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+      <rect x="10" y="20" width="330" height="40" rx="12" fill="#4caf5022"/>
+      <text x="175" y="46" text-anchor="middle" fill="#4caf50" font-size="13" font-weight="700">Financial Account (ContaFinanceira)</text>
+      <text x="25" y="80" fill="#7a8fa6" font-size="13">id</text><text x="210" y="80" fill="#9ab" font-size="13">UUID</text>
+      <text x="25" y="102" fill="#7a8fa6" font-size="13">nome</text><text x="210" y="102" fill="#9ab" font-size="13">string</text>
+      <text x="25" y="124" fill="#ff9800" font-size="13" font-weight="600">banco</text><text x="210" y="124" fill="#ff9800" font-size="13">enum (78+ banks)</text>
+      <text x="25" y="146" fill="#7a8fa6" font-size="13">tipo</text><text x="210" y="146" fill="#9ab" font-size="13">10 account types</text>
+      <text x="25" y="168" fill="#7a8fa6" font-size="13">agencia / numero</text><text x="210" y="168" fill="#9ab" font-size="13">string</text>
+      <text x="25" y="190" fill="#4caf50" font-size="13" font-weight="600">saldo_atual</text><text x="210" y="190" fill="#4caf50" font-size="13">via endpoint</text>
+      <text x="25" y="228" fill="#4caf50" font-size="12" font-weight="600">GET /v1/conta-financeira</text>
+    </g>
+
+    <!-- Parcela (Installment) - READ conciliado -->
+    <g filter="url(#o-glow)">
+      <rect x="395" y="20" width="330" height="240" rx="12" fill="#152230" stroke="#ff9800" stroke-width="2"/>
+      <rect x="395" y="20" width="330" height="40" rx="12" fill="#ff980022"/>
+      <text x="560" y="46" text-anchor="middle" fill="#ff9800" font-size="15" font-weight="700">Parcela (Installment)</text>
+      <text x="410" y="80" fill="#7a8fa6" font-size="13">id</text><text x="580" y="80" fill="#9ab" font-size="13">UUID</text>
+      <text x="410" y="102" fill="#7a8fa6" font-size="13">status</text><text x="580" y="102" fill="#9ab" font-size="13">7 values</text>
+      <text x="410" y="126" fill="#ff9800" font-size="14" font-weight="700">conciliado</text><text x="580" y="126" fill="#ff9800" font-size="13" font-weight="700">bool READ-ONLY</text>
+      <text x="410" y="150" fill="#7a8fa6" font-size="13">valor_pago</text><text x="580" y="150" fill="#9ab" font-size="13">double</text>
+      <text x="410" y="172" fill="#7a8fa6" font-size="13">id_conta_financeira</text><text x="580" y="172" fill="#9ab" font-size="13">UUID</text>
+      <text x="410" y="194" fill="#7a8fa6" font-size="13">data_vencimento</text><text x="580" y="194" fill="#9ab" font-size="13">date</text>
+      <text x="410" y="216" fill="#7a8fa6" font-size="13">baixas[]</text><text x="580" y="216" fill="#9ab" font-size="13">array of Baixa</text>
+      <text x="410" y="248" fill="#ff9800" font-size="12" font-style="italic">PATCH cannot set conciliado</text>
+    </g>
+
+    <!-- Baixa (Payment) - READ id_reconciliacao -->
+    <g filter="url(#o-glow)">
+      <rect x="780" y="20" width="370" height="270" rx="12" fill="#152230" stroke="#ff9800" stroke-width="2"/>
+      <rect x="780" y="20" width="370" height="40" rx="12" fill="#ff980022"/>
+      <text x="965" y="46" text-anchor="middle" fill="#ff9800" font-size="15" font-weight="700">Baixa (Payment)</text>
+      <text x="795" y="80" fill="#7a8fa6" font-size="13">id</text><text x="980" y="80" fill="#9ab" font-size="13">UUID</text>
+      <text x="795" y="104" fill="#ff9800" font-size="14" font-weight="700">id_reconciliacao</text><text x="980" y="104" fill="#ff9800" font-size="13" font-weight="700">UUID READ-ONLY</text>
+      <text x="795" y="128" fill="#7a8fa6" font-size="13">data_pagamento</text><text x="980" y="128" fill="#9ab" font-size="13">date</text>
+      <text x="795" y="152" fill="#ff9800" font-size="13" font-weight="600">origem</text><text x="980" y="152" fill="#ff9800" font-size="13">enum (16 values)</text>
+      <text x="795" y="176" fill="#7a8fa6" font-size="13">metodo_pagamento</text><text x="980" y="176" fill="#9ab" font-size="13">22 methods</text>
+      <text x="795" y="200" fill="#7a8fa6" font-size="13">valor_composicao</text><text x="980" y="200" fill="#9ab" font-size="13">value breakdown</text>
+      <text x="795" y="224" fill="#7a8fa6" font-size="13">conta_financeira</text><text x="980" y="224" fill="#9ab" font-size="13">ref</text>
+      <text x="795" y="248" fill="#7a8fa6" font-size="13">nsu</text><text x="980" y="248" fill="#9ab" font-size="13">bank txn ref</text>
+      <text x="795" y="278" fill="#ff9800" font-size="12" font-style="italic">Cannot write id_reconciliacao</text>
+    </g>
+
+    <!-- Transferencia - READ -->
+    <g filter="url(#g-glow)">
+      <rect x="10" y="350" width="330" height="190" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+      <rect x="10" y="350" width="330" height="40" rx="12" fill="#4caf5022"/>
+      <text x="175" y="376" text-anchor="middle" fill="#4caf50" font-size="14" font-weight="700">Transfer (Transferencia)</text>
+      <text x="25" y="410" fill="#7a8fa6" font-size="13">id</text><text x="190" y="410" fill="#9ab" font-size="13">UUID</text>
+      <text x="25" y="432" fill="#7a8fa6" font-size="13">valor</text><text x="190" y="432" fill="#9ab" font-size="13">decimal</text>
+      <text x="25" y="454" fill="#7a8fa6" font-size="13">data</text><text x="190" y="454" fill="#9ab" font-size="13">date</text>
+      <text x="25" y="476" fill="#7a8fa6" font-size="13">origem</text><text x="190" y="476" fill="#9ab" font-size="12">Settlement (Quitacao) - from</text>
+      <text x="25" y="498" fill="#7a8fa6" font-size="13">destino</text><text x="190" y="498" fill="#9ab" font-size="12">Settlement (Quitacao) - to</text>
+      <text x="25" y="528" fill="#4caf50" font-size="12" font-weight="600">GET /v1/financeiro/transferencias</text>
+    </g>
+
+    <!-- Sales Reconciliation - READ -->
+    <g filter="url(#o-glow)">
+      <rect x="395" y="380" width="330" height="140" rx="12" fill="#152230" stroke="#ff9800" stroke-width="2"/>
+      <rect x="395" y="380" width="330" height="40" rx="12" fill="#ff980022"/>
+      <text x="560" y="406" text-anchor="middle" fill="#ff9800" font-size="14" font-weight="700">Sales Totals (Totais)</text>
+      <text x="410" y="442" fill="#ff9800" font-size="13" font-weight="600">quantidade_nao_conciliados</text>
+      <text x="410" y="462" fill="#7a8fa6" font-size="13">Unreconciled item count</text>
+      <text x="410" y="490" fill="#ff9800" font-size="13" font-weight="600">CONCILIACAO_ITENS</text>
+      <text x="410" y="510" fill="#7a8fa6" font-size="13">Pending status type</text>
+    </g>
+
+    <!-- Native Banking Integration (handled by Conta Azul) -->
+    <g filter="url(#g-glow)">
+      <rect x="780" y="370" width="370" height="170" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+      <rect x="780" y="370" width="370" height="40" rx="12" fill="#4caf5022"/>
+      <text x="965" y="396" text-anchor="middle" fill="#4caf50" font-size="15" font-weight="700">Native Banking Integration</text>
+      <text x="795" y="432" fill="#9ab" font-size="13">Auto-import from 13+ banks (daily)</text>
+      <text x="795" y="456" fill="#9ab" font-size="13">Manual OFX upload for others</text>
+      <text x="795" y="480" fill="#9ab" font-size="13">Auto-matching: exact or &plusmn;5 days</text>
+      <text x="795" y="504" fill="#ff9800" font-size="13">No API access (ERP-internal only)</text>
+      <text x="795" y="528" fill="#4caf50" font-size="12" font-weight="600">Handled natively by Conta Azul</text>
+    </g>
+
+    <!-- Relationship arrows -->
+    <line x1="340" y1="130" x2="395" y2="130" stroke="#3a5068" stroke-width="2" marker-end="url(#arr)"/>
+    <text x="368" y="122" text-anchor="middle" fill="#667788" font-size="12">belongs to</text>
+    <line x1="725" y1="140" x2="780" y2="100" stroke="#3a5068" stroke-width="2" marker-end="url(#arr)"/>
+    <text x="753" y="108" text-anchor="middle" fill="#667788" font-size="12">has many</text>
+    <line x1="175" y1="240" x2="175" y2="350" stroke="#3a5068" stroke-width="2" marker-end="url(#arr)"/>
+    <text x="195" y="300" fill="#667788" font-size="12">between</text>
+
+    <!-- Animated data flow -->
+    <circle r="5" fill="#4fc3f7" opacity="0">
+      <animateMotion dur="6s" repeatCount="indefinite" path="M 175 130 L 395 130 L 725 140 L 780 100"/>
+      <animate attributeName="opacity" values="0;0.8;0.8;0.8;0" dur="6s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Legend -->
+    <g transform="translate(20, 620)">
+      <circle cx="8" cy="8" r="6" fill="#4caf50"/><text x="22" y="13" fill="#9ab" font-size="13">Queryable endpoint</text>
+      <circle cx="250" cy="8" r="6" fill="#ff9800"/><text x="264" y="13" fill="#9ab" font-size="13">Read-only field (no write API)</text>
+      <circle cx="530" cy="8" r="6" fill="#4caf50"/><text x="544" y="13" fill="#9ab" font-size="13">Handled natively by Conta Azul (not API-exposed)</text>
+    </g>
+  </svg>
+</div>
+
+<div class="divider"></div>
+
+<!-- What you CAN read -->
+<div class="section">
+  <h2>What the API Exposes (Read-Only)</h2>
+  <div class="cards">
+    <div class="card available">
+      <div class="card-header"><div class="card-dot green"></div><h4>Financial Account Listing</h4></div>
+      <p>Query all bank accounts with 78+ supported Brazilian banks, account types, agency/number, active status.</p>
+      <p style="margin-top:8px"><a href="https://developers.contaazul.com/docs/financial-apis-openapi/v1/searchfinancialaccounts" target="_blank"><code>GET /v1/conta-financeira</code></a></p>
+    </div>
+    <div class="card available">
+      <div class="card-header"><div class="card-dot green"></div><h4>Real-Time Account Balance</h4></div>
+      <p>Get current balance for any financial account by ID. Useful for snapshot reconciliation checks.</p>
+      <p style="margin-top:8px"><a href="https://developers.contaazul.com/docs/financial-apis-openapi/v1/searchbalancebyfinancialaccountid" target="_blank"><code>GET /v1/conta-financeira/{id}/saldo-atual</code></a></p>
+    </div>
+    <div class="card available">
+      <div class="card-header"><div class="card-dot green"></div><h4>Inter-Account Transfers</h4></div>
+      <p>Query transfers between financial accounts by date range and account IDs. Includes full value composition (gross, net, fees, interest, discounts).</p>
+      <p style="margin-top:8px"><a href="https://developers.contaazul.com/docs/financial-apis-openapi/v1/searchaccountingexporttransfers" target="_blank"><code>GET /v1/financeiro/transferencias</code></a></p>
+    </div>
+    <div class="card readonly">
+      <div class="card-header"><div class="card-dot orange"></div><h4>Reconciliation Flag on Parcela</h4></div>
+      <p><code>conciliado: boolean</code> on every installment record. Tells you if it's been reconciled in the ERP. <strong>Not writable</strong> via PATCH &mdash; the PATCH endpoint only accepts: nota, descricao, vencimento, composicao_valor, versao, metodo_pagamento, nsu, pagamento_agendado, id_conta_financeira.</p>
+    </div>
+    <div class="card readonly">
+      <div class="card-header"><div class="card-dot orange"></div><h4>Reconciliation ID on Baixa</h4></div>
+      <p><code>id_reconciliacao: UUID</code> on every payment record. Links to the internal ERP reconciliation record. <strong>Read-only</strong> &mdash; no endpoint to create or update reconciliation records.</p>
+    </div>
+    <div class="card readonly">
+      <div class="card-header"><div class="card-dot orange"></div><h4>Payment Origin Tracking</h4></div>
+      <p>The <code>origem</code> enum on Baixa records tells you HOW a payment was created &mdash; critical for knowing which came from bank imports vs manual entries. Key reconciliation values: <code>SALDO_CONTA_BANCARIA</code>, <code>IMPORTACAO_DOCUMENTO</code>.</p>
+    </div>
+    <div class="card readonly">
+      <div class="card-header"><div class="card-dot orange"></div><h4>Sales Unreconciled Count</h4></div>
+      <p><code>quantidade_nao_conciliados</code> in Sales Totals (Totais) tells you how many sale items still need item-level reconciliation. The <code>CONCILIACAO_ITENS</code> pending status flags sales waiting for reconciliation.</p>
+    </div>
+    <div class="card readonly">
+      <div class="card-header"><div class="card-dot orange"></div><h4>NSU / Bank Transaction Reference</h4></div>
+      <p><code>nsu: string</code> on Baixa records stores the bank transaction reference number. Writable via PATCH parcela, but the reconciliation link itself cannot be established through the API.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Conta Azul's Native Banking Integration -->
+<div class="section">
+  <h2>Conta Azul's Native Banking Integration</h2>
+  <p style="color:#9ab; font-size:13px; margin-bottom:16px;">Bank statement import and reconciliation are handled natively inside the ERP &mdash; no API or browser automation needed for these steps.</p>
+  <div class="cards">
+    <div class="card available">
+      <div class="card-header"><div class="card-dot green"></div><h4>Automatic Bank Integration (13+ Banks)</h4></div>
+      <p>Daily automatic import of bank transactions. Supported banks: <strong>Banco do Brasil, Bradesco, BS2, BTG Pactual, Caixa Econ&ocirc;mica, C6 Bank, Cora, Inter, Ita&uacute;, Nubank, Santander, Sicoob, Sicredi</strong>. PagSeguro &amp; Stone integrate card machine transactions only. No limit on number of connected accounts.</p>
+    </div>
+    <div class="card available">
+      <div class="card-header"><div class="card-dot green"></div><h4>Manual OFX Import (Any Bank)</h4></div>
+      <p>For banks without automatic integration: upload OFX files (Money 2000 format, max 5 MB, ascending date order, D-1 or earlier). Navigate to <em>Financeiro &gt; Contas financeiras &gt; A&ccedil;&otilde;es da Conta &gt; Importar extrato (.OFX)</em>.</p>
+    </div>
+    <div class="card available">
+      <div class="card-header"><div class="card-dot green"></div><h4>Automatic Reconciliation Matching</h4></div>
+      <p>Configurable matching rules: <strong>Exact</strong> (same amount + same due date) or <strong>Approximate</strong> (same amount + due date within &plusmn;5 days). Exact runs first when both are enabled. Duplicates (identical amount &amp; date) are skipped and left for manual review.</p>
+    </div>
+    <div class="card readonly">
+      <div class="card-header"><div class="card-dot orange"></div><h4>Auto-Payment Processing</h4></div>
+      <p>Recognized payments automatically update payables (<em>baixa do contas a pagar</em>) and receivables. Cross-references incoming payments with invoices. Saves up to <strong>20 hours/month</strong> per Conta Azul's estimates.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- What's actually missing from the API -->
+<div class="section">
+  <h2>Remaining API Gaps</h2>
+  <p style="color:#9ab; font-size:13px; margin-bottom:16px;">With native integration handling import and matching, the actual gaps are narrower:</p>
+  <div class="cards">
+    <div class="card readonly">
+      <div class="card-header"><div class="card-dot orange"></div><h4>Bank Statement Listing</h4></div>
+      <p>No API endpoint to query imported bank transactions. You can only see the resulting payments (<code>baixas</code>) after matching &mdash; not the raw bank statement entries. For monitoring purposes, this is usually sufficient.</p>
+    </div>
+    <div class="card missing">
+      <div class="card-header"><div class="card-dot red"></div><h4>Manual Match Override</h4></div>
+      <p>No API for proposing, confirming, or rejecting matches. When auto-matching fails (duplicates, partial amounts), the ERP user must resolve in the UI. Browser automation needed only for these edge cases.</p>
+    </div>
+    <div class="card missing">
+      <div class="card-header"><div class="card-dot red"></div><h4>Set Reconciled Status</h4></div>
+      <p>Cannot mark parcelas as <code>conciliado: true</code> or assign <code>id_reconciliacao</code> to baixas via API. These fields are system-managed. The PATCH parcela endpoint explicitly excludes both fields.</p>
+    </div>
+    <div class="card readonly">
+      <div class="card-header"><div class="card-dot orange"></div><h4>Integration Configuration</h4></div>
+      <p>Cannot connect/disconnect bank accounts or change matching rules via API. Initial setup and configuration changes must be done in the Conta Azul UI. Once configured, everything runs automatically.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Baixa.origem enum -->
+<div class="section">
+  <h2>Baixa.origem &mdash; Payment Source Enum (16 values)</h2>
+  <p style="color:#9ab; font-size:13px; margin-bottom:12px;">These values reveal how the ERP created each payment. The highlighted ones are reconciliation-relevant:</p>
+  <div class="enum-grid">
+    <span class="enum-tag highlight">SALDO_CONTA_BANCARIA</span>
+    <span class="enum-tag highlight">IMPORTACAO_DOCUMENTO</span>
+    <span class="enum-tag">LANCAMENTO_FINANCEIRO</span>
+    <span class="enum-tag">VENDA</span>
+    <span class="enum-tag">COMPRA</span>
+    <span class="enum-tag">VENDA_AGENDADA</span>
+    <span class="enum-tag">COMPRA_AGENDADA</span>
+    <span class="enum-tag">TRANSFERENCIA</span>
+    <span class="enum-tag">NOTA_COMPRA</span>
+    <span class="enum-tag">ANTECIPACAO</span>
+    <span class="enum-tag">RENEGOCIACAO</span>
+    <span class="enum-tag">DAS</span>
+    <span class="enum-tag">FOLHA</span>
+    <span class="enum-tag">IMPOSTO_RETIDO</span>
+    <span class="enum-tag">SIC</span>
+    <span class="enum-tag">HONORARIOS_CONTABEIS</span>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Detailed field mapping -->
+<div class="section">
+  <h2>Reconciliation Field Reference</h2>
+  <table>
+    <thead><tr><th>Field</th><th>Schema</th><th>Type</th><th>Access</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>conciliado</code></td>
+        <td>Parcela</td>
+        <td><code>boolean</code></td>
+        <td><span class="badge readonly">Read-only</span></td>
+        <td>Whether this installment has been reconciled with a bank transaction in the ERP</td>
+      </tr>
+      <tr>
+        <td><code>id_reconciliacao</code></td>
+        <td>Baixa</td>
+        <td><code>UUID</code></td>
+        <td><span class="badge readonly">Read-only</span></td>
+        <td>Links this payment to an internal ERP reconciliation record</td>
+      </tr>
+      <tr>
+        <td><code>origem</code></td>
+        <td>Baixa</td>
+        <td><code>enum (16)</code></td>
+        <td><span class="badge readonly">Read-only</span></td>
+        <td>Source of payment. <code>SALDO_CONTA_BANCARIA</code> and <code>IMPORTACAO_DOCUMENTO</code> indicate bank-originated entries</td>
+      </tr>
+      <tr>
+        <td><code>nsu</code></td>
+        <td>Baixa / Parcela</td>
+        <td><code>string</code></td>
+        <td><span class="badge read">Read + Write</span></td>
+        <td>Bank transaction reference number. Writable via PATCH parcela. Can be used to store external matching IDs</td>
+      </tr>
+      <tr>
+        <td><code>metodo_pagamento</code></td>
+        <td>Baixa / Parcela</td>
+        <td><code>enum (22)</code></td>
+        <td><span class="badge read">Read + Write</span></td>
+        <td>Payment method. Writable. Includes PIX, boleto, transfer, debit, etc.</td>
+      </tr>
+      <tr>
+        <td><code>id_conta_financeira</code></td>
+        <td>Parcela</td>
+        <td><code>UUID</code></td>
+        <td><span class="badge read">Read + Write</span></td>
+        <td>Which bank account this installment is associated with. Writable via PATCH.</td>
+      </tr>
+      <tr>
+        <td><code>saldo_atual</code></td>
+        <td>SaldoAtualResponse</td>
+        <td><code>double</code></td>
+        <td><span class="badge read">Read (endpoint)</span></td>
+        <td>Current balance of a financial account. Queryable for balance comparison.</td>
+      </tr>
+      <tr>
+        <td><code>quantidade_nao_conciliados</code></td>
+        <td>Sales Totals (Totais)</td>
+        <td><code>integer</code></td>
+        <td><span class="badge readonly">Read-only</span></td>
+        <td>Count of unreconciled items in a sales search result</td>
+      </tr>
+      <tr>
+        <td><code>banco</code></td>
+        <td>Financial Account (ContaFinanceira)</td>
+        <td><code>enum (78+)</code></td>
+        <td><span class="badge read">Read (endpoint)</span></td>
+        <td>Bank institution code. 78+ Brazilian banks supported.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="divider"></div>
+
+<!-- Recommended Approach -->
+<div class="section">
+  <h2>Recommended: Let Conta Azul Reconcile, Monitor via API</h2>
+  <div class="workaround">
+    <h4>Leverage native integration, monitor with API</h4>
+    <p>Since Conta Azul handles import and matching natively, the best strategy is to let it do its job and use the API for monitoring and exception handling:</p>
+    <ol>
+      <li><strong>Set up automatic banking integration</strong> in Conta Azul UI (one-time, per bank account)</li>
+      <li><strong>Configure matching rules</strong> &mdash; enable both exact and approximate (&plusmn;5 days) for best coverage</li>
+      <li><strong>Monitor unreconciled items</strong> via API: query parcelas with <code>conciliado=false</code> using <a href="https://developers.contaazul.com/docs/financial-apis-openapi/v1/searchinstallmentstoreceivebyfilter" target="_blank" style="color:#4fc3f7"><code>GET .../contas-a-receber/buscar</code></a> and <a href="https://developers.contaazul.com/docs/financial-apis-openapi/v1/searchinstallmentstopaybyfilter" target="_blank" style="color:#4fc3f7"><code>GET .../contas-a-pagar/buscar</code></a></li>
+      <li><strong>Track reconciliation progress</strong> by polling <code>conciliado</code> flag changes via <code>data_alteracao_de/ate</code></li>
+      <li><strong>Verify balances</strong> via <a href="https://developers.contaazul.com/docs/financial-apis-openapi/v1/searchbalancebyfinancialaccountid" target="_blank" style="color:#4fc3f7"><code>GET /v1/conta-financeira/{id}/saldo-atual</code></a> to flag discrepancies</li>
+      <li><strong>Alert on exceptions</strong> &mdash; items unreconciled for 7+ days, balance mismatches, duplicate amounts</li>
+      <li><strong>Store external refs</strong> on matched parcelas via <a href="https://developers.contaazul.com/docs/financial-apis-openapi/v1/updateinstallment" target="_blank" style="color:#4fc3f7"><code>PATCH .../parcelas/{id}</code></a> using the <code>nsu</code> field</li>
+    </ol>
+  </div>
+
+  <div class="workaround" style="border-left-color: #ff9800; margin-top: 16px;">
+    <h4>When browser automation IS still needed</h4>
+    <ol>
+      <li><strong>Initial bank connection setup</strong> &mdash; one-time per account, requires bank-side authorization</li>
+      <li><strong>Unresolved matches</strong> &mdash; when auto-matching fails (duplicates, split payments), a human or browser agent must resolve in the UI</li>
+      <li><strong>OFX import for unsupported banks</strong> &mdash; if the bank isn't in the 13+ homologated list, OFX must be uploaded manually via the UI</li>
+      <li><strong>Changing reconciliation configuration</strong> &mdash; matching rules can only be adjusted in the ERP settings</li>
+    </ol>
+  </div>
+
+  <div class="workaround" style="border-left-color: #4caf50; margin-top: 16px;">
+    <h4>Key insight: the gap is much smaller than it appears</h4>
+    <p>With native banking integration covering statement import and auto-matching, the only reconciliation work left for an agent is <strong>exception handling</strong> &mdash; roughly 5&ndash;15% of transactions that don't auto-match. For those edge cases, browser automation (Playwright or Claude Computer Use) can navigate the reconciliation UI. The API's read-only <code>conciliado</code> flag tells you exactly which items need attention.</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="back-link">
+  <a href="flows.html">&larr; Back to AP &amp; AR Flow Overview</a>
+</div>
+
+</body>
+</html>

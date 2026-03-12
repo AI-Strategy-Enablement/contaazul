@@ -1,0 +1,2347 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Vendas",
+    "version": "v1",
+    "description": "A API de Vendas (v1) permite que sistemas externos integrem funcionalidades de vendas diretamente com o ERP da Conta Azul. Com ela, é possível criar, atualizar, consultar e excluir vendas, bem como recuperar informações detalhadas sobre os itens das vendas e gerar documentos associados, como PDFs de vendas.\n\nSe desejar aprofundar o entendimento das regras de negócio aplicadas pelo ERP, recomendamos, de forma opcional a consulta à nossa Central de Ajuda:\n\n[https://ajuda.contaazul.com/hc/pt-br/sections/19712754054285-Controle-de-vendas](https://ajuda.contaazul.com/hc/pt-br/sections/19712754054285-Controle-de-vendas)\n"
+  },
+  "servers": [
+    {
+      "url": "https://api-v2.contaazul.com",
+      "description": "Servidor de produção"
+    }
+  ],
+  "tags": [
+    {
+      "name": "v1",
+      "description": "Conjunto de recursos para acompanhar e administrar operações relacionadas a vendas - esses recursos incluem retornar os vendedores, retornar a venda por id, atualizar uma venda por id, retornar as vendas por filtro, criar uma nova venda, retornar o PDF de uma venda, excluir vendas em lote e retornar os itens de uma venda  pelo id da venda"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/venda/vendedores": {
+      "get": {
+        "summary": "Retornar os vendedores",
+        "operationId": "listVendedores",
+        "description": "Retorna a lista de vendedores cadastrados na Conta Azul. Útil quando você precisa atribuir um vendedor a uma venda ou exibir opções de vendedores em sua interface.",
+        "tags": [
+          "v1"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Vendedor"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/venda/{id}": {
+      "get": {
+        "summary": "Retornar a venda por id",
+        "operationId": "getVendaById",
+        "description": "Recupera os detalhes de uma venda específica por ID (pode ser UUID ou id legado). Útil quando quiser exibir ou sincronizar todos os dados de uma venda específica.",
+        "tags": [
+          "v1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "schema": {
+              "type": "string"
+            },
+            "description": "O legacy id ou uuid da venda a ser obtida"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObterVendaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Atualizar uma venda por id",
+        "operationId": "editSale",
+        "description": "Permite atualizar uma venda existente. Útil se sua aplicação permite editar vendas depois que foram criadas no ERP.",
+        "tags": [
+          "v1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "schema": {
+              "type": "string"
+            },
+            "description": "O uuid da venda a ser editada"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendaParaEdicaoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendaEditadaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/venda/busca": {
+      "get": {
+        "summary": "Retornar as vendas por filtro",
+        "operationId": "searchVendas",
+        "description": "Retorna as vendas filtradas, podendo fazer uso de parâmetros de consulta como data inicial/final, cliente, situação, tipos de venda, IDs de produtos, IDs de categorias, paginação, entre outros. Use esse endpoint para construir telas de listagem, dashboards ou relatórios de vendas.",
+        "tags": [
+          "v1"
+        ],
+        "parameters": [
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "description": "Página",
+            "example": 1,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "tamanho_pagina",
+            "in": "query",
+            "required": false,
+            "description": "Tamanho da página",
+            "example": 10,
+            "schema": {
+              "enum": [
+                10,
+                20,
+                50,
+                100,
+                200,
+                500,
+                1000
+              ],
+              "type": "integer"
+            }
+          },
+          {
+            "name": "campo_ordenado_ascendente",
+            "in": "query",
+            "required": false,
+            "description": "Campo para ordenação ascendente. Se informado ele desconsidera o valor do  campo_ordenado_descendente. É possível ordenar por numero da venda (NUMERO),  pelo nome do cliente (CLIENTE) ou pela data da venda (DATA)",
+            "example": "numero",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NUMERO",
+                "CLIENTE",
+                "DATA"
+              ]
+            }
+          },
+          {
+            "name": "campo_ordenado_descendente",
+            "in": "query",
+            "required": false,
+            "description": "Campo para ordenação descendente. Se este campo for utilizado, o campo campo_ordenado_ascendente  não deverá ser informado. É possível ordenar por numero da venda (NUMERO), pelo nome do  cliente (CLIENTE) ou pela data da venda (DATA)",
+            "example": "numero",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NUMERO",
+                "CLIENTE",
+                "DATA"
+              ]
+            }
+          },
+          {
+            "name": "termo_busca",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Termo para busca das vendas por nome, email do cliente ou número da venda"
+            }
+          },
+          {
+            "name": "data_inicio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2023-12-30"
+            },
+            "description": "Data de início da emissão da venda"
+          },
+          {
+            "name": "data_fim",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2023-12-30"
+            },
+            "description": "Data final da emissão da venda"
+          },
+          {
+            "name": "data_criacao_de",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2023-12-30"
+            },
+            "description": "Data de início da criação da venda"
+          },
+          {
+            "name": "data_criacao_ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2023-12-31"
+            },
+            "description": "Data final da criação da venda"
+          },
+          {
+            "name": "data_alteracao_de",
+            "in": "query",
+            "description": "Data de alteração de (ISO 8601, São Paulo/GMT-3)",
+            "example": "2025-10-20T07:59:59",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "data_alteracao_ate",
+            "in": "query",
+            "description": "Data de alteração até (ISO 8601, São Paulo/GMT-3)",
+            "example": "2025-10-29T07:59:59",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ids_vendedores",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "description": "ids dos vendedores"
+          },
+          {
+            "name": "ids_clientes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "description": "ids dos clientes"
+          },
+          {
+            "name": "ids_natureza_operacao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "description": "ids da natureza da operação"
+          },
+          {
+            "name": "situacoes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Situações das vendas"
+          },
+          {
+            "name": "tipos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Tipos de vendas"
+          },
+          {
+            "name": "origens",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Origens das vendas"
+          },
+          {
+            "name": "numeros",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "description": "Números das vendas"
+          },
+          {
+            "name": "ids_categorias",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "description": "ids das categorias"
+          },
+          {
+            "name": "ids_produtos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "description": "ids dos produtos"
+          },
+          {
+            "name": "pendente",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Indica se a venda está pendente"
+          },
+          {
+            "name": "totais",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tipo de total de venda. Possiveis valores `WAITING_APPROVED`, `APPROVED`, `CANCELED`, `ALL`"
+          },
+          {
+            "name": "ids_legado_donos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "description": "ids legados dos donos"
+          },
+          {
+            "name": "ids_legado_clientes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "description": "ids legados dos clientes"
+          },
+          {
+            "name": "ids_legado_produtos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "description": "ids legados dos produtos"
+          },
+          {
+            "name": "ids_legado_categorias",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "description": "ids legados das categorias"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListagemVendasResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/venda": {
+      "post": {
+        "summary": "Criar uma nova venda",
+        "operationId": "createVenda",
+        "description": "Cria uma nova venda no sistema da Conta Azul. Ideal para registrar vendas vindas de sistemas externos diretamente no ERP da Conta Azul.",
+        "tags": [
+          "v1"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriacaoVendaRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CriacaoVendaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/venda/{id}/imprimir": {
+      "get": {
+        "summary": "Retornar o PDF de uma venda",
+        "operationId": "printVendaPdf",
+        "description": "Gera e retorna um PDF da venda identificada pelo ID. Use quando precisar mostrar ao usuário ou armazenar uma versão impressa da venda.",
+        "tags": [
+          "v1"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "description": "id da venda a ser impressa, pode ser passado id ou uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/venda/exclusao-lote": {
+      "post": {
+        "summary": "Excluir vendas em lote",
+        "operationId": "deleteVendasBatch",
+        "description": "Permite excluir várias vendas de uma vez. Útil para excluir em lote vendas de forma automatizada. Útil durante sincronizações ou processos de limpeza de dados.",
+        "tags": [
+          "v1"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExclusaoLote"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExclusaoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/venda/{id_venda}/itens": {
+      "get": {
+        "summary": "Retornar os itens de uma venda pelo id da venda",
+        "operationId": "getVendaItens",
+        "description": "Retorna a lista de itens de uma venda, dado o ID da venda. Use para exibir um detalhe da venda (todos produtos/serviços) ou para sincronizar os itens da venda para outros sistemas.",
+        "tags": [
+          "v1"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id_venda",
+            "required": true,
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "id da venda"
+          },
+          {
+            "in": "query",
+            "name": "pagina",
+            "example": 1,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Página"
+          },
+          {
+            "in": "query",
+            "name": "tamanho_pagina",
+            "example": 10,
+            "schema": {
+              "enum": [
+                10,
+                20,
+                50,
+                100,
+                200,
+                500,
+                1000
+              ],
+              "type": "integer"
+            },
+            "description": "Tamanho da página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItensPaginados"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/venda/proximo-numero": {
+      "get": {
+        "summary": "Retornar o próximo número de venda disponível",
+        "operationId": "getNextVendaNumber",
+        "description": "Retorna o próximo número de venda disponível, segundo a numeração usada no ERP da Conta Azul. Pode ser usado antes de criar uma venda para garantir que você está usando uma sequência de número válida/nova.",
+        "tags": [
+          "v1"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "nullable": true,
+                  "example": 4512645
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token de autorização Bearer JWT"
+      }
+    },
+    "schemas": {
+      "ExclusaoLote": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 10,
+            "description": "Lista de uuids das vendas a serem excluídas"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "example": {
+          "ids": [
+            "123e4567-e89b-12d3-a456-426614174000",
+            "123e4567-e89b-12d3-a456-426614174001"
+          ]
+        }
+      },
+      "ItensPaginados": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          },
+          "itens_totais": {
+            "type": "integer",
+            "example": 25
+          },
+          "totais": {
+            "$ref": "#/components/schemas/Totais"
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "uuid do item vendido"
+          },
+          "id_item": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174001",
+            "description": "uuid do item"
+          },
+          "nome": {
+            "type": "string",
+            "example": "Produto 1",
+            "description": "Nome do item vendido"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Descrição do produto 1",
+            "description": "Descrição do item vendido"
+          },
+          "tipo": {
+            "type": "string",
+            "example": "PRODUTO",
+            "enum": [
+              "PRODUTO",
+              "SERVICO",
+              "ATIVOS_IMOBILIZADOS",
+              "FINANCEIRO",
+              "KIT_PRODUTOS"
+            ],
+            "description": "Tipo do item vendido"
+          },
+          "quantidade": {
+            "type": "number",
+            "example": 1,
+            "description": "Quantidade do item vendido"
+          },
+          "valor": {
+            "type": "number",
+            "example": 100,
+            "description": "Valor unitário do item vendido"
+          },
+          "custo": {
+            "type": "number",
+            "example": 100,
+            "description": "Valor de custo do item vendido"
+          }
+        }
+      },
+      "Totais": {
+        "type": "object",
+        "properties": {
+          "quantidade_produtos": {
+            "type": "integer",
+            "example": 1,
+            "description": "Quantidade total de produtos vendidos"
+          },
+          "quantidade_servicos": {
+            "type": "integer",
+            "example": 1,
+            "description": "Quantidade total de serviços vendidos"
+          },
+          "quantidade_nao_conciliados": {
+            "type": "integer",
+            "example": 1,
+            "description": "Quantidade total de itens não conciliados"
+          }
+        }
+      },
+      "ObterVendaResponse": {
+        "type": "object",
+        "properties": {
+          "cliente": {
+            "$ref": "#/components/schemas/ClientePegarVendaPorId"
+          },
+          "evento_financeiro": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "example": "123e4567-e89b-12d3-a456-426614174000"
+              }
+            }
+          },
+          "notificacao": {
+            "$ref": "#/components/schemas/Notificacao"
+          },
+          "natureza_operacao": {
+            "$ref": "#/components/schemas/NaturezaOperacao"
+          },
+          "venda": {
+            "$ref": "#/components/schemas/Negociacao"
+          },
+          "vendedor": {
+            "$ref": "#/components/schemas/Vendedor"
+          },
+          "contrato": {
+            "$ref": "#/components/schemas/Contrato"
+          }
+        }
+      },
+      "ListagemVendasResponse": {
+        "type": "object",
+        "properties": {
+          "totais": {
+            "$ref": "#/components/schemas/TotaisVenda"
+          },
+          "quantidades": {
+            "$ref": "#/components/schemas/QuantidadesVenda"
+          },
+          "total_itens": {
+            "type": "integer",
+            "example": 10,
+            "description": "Total de itens"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Venda"
+            }
+          }
+        }
+      },
+      "TotaisVenda": {
+        "type": "object",
+        "description": "Valores das de vendas com status Aprovado, Cancelado, Esperando aprovação e Total",
+        "properties": {
+          "total": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor total obtido de todas as vendas",
+            "example": 1000
+          },
+          "aprovado": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor obtido das vendas aprovadas",
+            "example": 500
+          },
+          "cancelado": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor obtido das vendas canceladas",
+            "example": 200
+          },
+          "esperando_aprovacao": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor obtido das vendas esperando aprovação",
+            "example": 300
+          }
+        }
+      },
+      "QuantidadesVenda": {
+        "type": "object",
+        "description": "Quantidades de vendas com status Aprovado, Cancelado, Esperando aprovação e Total",
+        "properties": {
+          "total": {
+            "type": "number",
+            "format": "double",
+            "description": "Quantidade total de vendas realizadas",
+            "example": 10
+          },
+          "aprovado": {
+            "type": "number",
+            "format": "double",
+            "description": "Quantidade de vendas aprovadas",
+            "example": 5
+          },
+          "cancelado": {
+            "type": "number",
+            "format": "double",
+            "description": "Quantidade de vendas canceladas",
+            "example": 3
+          },
+          "esperando_aprovacao": {
+            "type": "number",
+            "format": "double",
+            "description": "Quantidade de vendas esperando aprovação",
+            "example": 2
+          }
+        }
+      },
+      "Venda": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id da venda",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "total": {
+            "type": "number",
+            "format": "double",
+            "description": "Total da venda",
+            "example": 1000
+          },
+          "id_legado": {
+            "type": "integer",
+            "description": "id legado da venda",
+            "example": 123456
+          },
+          "data": {
+            "type": "string",
+            "description": "Data da venda",
+            "example": "2023-12-31"
+          },
+          "criado_em": {
+            "format": "date-time",
+            "description": "Data de criação da venda",
+            "example": "2025-05-16T17:51:04.63"
+          },
+          "data_alteracao": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de alteração da venda (ISO 8601, São Paulo/GMT-3)",
+            "example": "2025-10-17T02:00:08.841"
+          },
+          "tipo": {
+            "type": "string",
+            "example": "PRODUTO",
+            "description": "Tipo da venda"
+          },
+          "itens": {
+            "type": "string",
+            "example": "PRODUTO",
+            "description": "Tipo de itens"
+          },
+          "condicao_pagamento": {
+            "type": "boolean",
+            "example": true,
+            "description": "Condição de pagamento"
+          },
+          "numero": {
+            "type": "integer",
+            "description": "Número da venda",
+            "example": 1001
+          },
+          "cliente": {
+            "$ref": "#/components/schemas/Cliente"
+          },
+          "situacao": {
+            "$ref": "#/components/schemas/Situacao"
+          },
+          "versao": {
+            "type": "integer",
+            "description": "Versão da venda",
+            "example": 1
+          },
+          "status_email": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "example": "ENVIADO",
+                "description": "Status"
+              },
+              "enviado_em": {
+                "type": "string",
+                "format": "date",
+                "example": "2023-12-31",
+                "description": "Data de envio"
+              }
+            }
+          },
+          "id_contrato": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do contrato",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "origem": {
+            "type": "string",
+            "description": "Origem da venda",
+            "example": "API"
+          }
+        }
+      },
+      "Cliente": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do cliente",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "nome": {
+            "type": "string",
+            "description": "Nome do cliente",
+            "example": "João da Silva"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do cliente",
+            "example": "exemplo@email.com"
+          },
+          "telefone": {
+            "type": "string",
+            "description": "Telefone do cliente",
+            "example": "11912345678"
+          },
+          "endereco": {
+            "type": "string",
+            "description": "Endereço do cliente",
+            "example": "Rua das Flores, 123"
+          },
+          "cidade": {
+            "type": "string",
+            "description": "Cidade do cliente",
+            "example": "São Paulo"
+          },
+          "estado": {
+            "type": "string",
+            "description": "Estado do cliente",
+            "example": "SP"
+          },
+          "pais": {
+            "type": "string",
+            "description": "País do cliente",
+            "example": "Brasil"
+          },
+          "cep": {
+            "type": "string",
+            "description": "CEP do cliente",
+            "example": "12345-678"
+          }
+        }
+      },
+      "Situacao": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Aprovado",
+            "description": "Nome da situação"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Venda aprovada e processada",
+            "description": "Descrição da situação"
+          }
+        }
+      },
+      "ClientePegarVendaPorId": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "tipo_pessoa": {
+            "type": "string",
+            "description": "Tipo de pessoa",
+            "example": "Física"
+          },
+          "documento": {
+            "type": "string",
+            "description": "Documento",
+            "example": "12345678901"
+          },
+          "nome": {
+            "type": "string",
+            "description": "Nome",
+            "example": "João da Silva"
+          }
+        }
+      },
+      "NaturezaOperacao": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "tipo_operacao": {
+            "$ref": "#/components/schemas/TipoOperacao"
+          },
+          "template_operacao": {
+            "$ref": "#/components/schemas/TemplateNaturezaOperacao"
+          },
+          "label": {
+            "type": "string",
+            "description": "Label",
+            "example": "Venda a Não Contribuinte"
+          },
+          "mudanca_financeira": {
+            "type": "boolean",
+            "example": true
+          },
+          "mudanca_estoque": {
+            "$ref": "#/components/schemas/MudancaEstoque"
+          }
+        }
+      },
+      "Negociacao": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id da negociação",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "id_legado": {
+            "type": "integer",
+            "example": 123456
+          },
+          "tipo_negociacao": {
+            "$ref": "#/components/schemas/TipoNegociacao"
+          },
+          "numero": {
+            "type": "integer",
+            "example": 1001
+          },
+          "id_categoria": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "data_compromisso": {
+            "format": "date",
+            "example": "2023-12-31"
+          },
+          "configuracao_de_desconto": {
+            "$ref": "#/components/schemas/ConfiguracaoDesconto"
+          },
+          "composicao_valor": {
+            "$ref": "#/components/schemas/ComposicaoValor"
+          },
+          "condicao_pagamento": {
+            "$ref": "#/components/schemas/CondicaoPagamento"
+          },
+          "total_itens": {
+            "$ref": "#/components/schemas/ItensTotaisNegociacao"
+          },
+          "observacoes": {
+            "type": "string",
+            "example": "Cliente confirmou o prazo de pagamento"
+          },
+          "id_cliente": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "versao": {
+            "type": "integer",
+            "example": 1
+          },
+          "tipo_pendencia": {
+            "$ref": "#/components/schemas/TipoPendente"
+          },
+          "situacao": {
+            "$ref": "#/components/schemas/SituacaoNegociacao"
+          },
+          "id_natureza_operacao": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "id_centro_custo": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "introducao": {
+            "type": "string",
+            "description": "Introdução da venda em orçamento",
+            "example": "Orçamento do produto 1 e serviço 1"
+          },
+          "origem": {
+            "type": "string",
+            "description": "Origem da venda",
+            "example": "API"
+          }
+        }
+      },
+      "Notificacao": {
+        "type": "object",
+        "properties": {
+          "id_referencia": {
+            "type": "string",
+            "example": "notificacao-123456",
+            "description": "id de referência da notificação"
+          },
+          "enviado_para": {
+            "type": "string",
+            "example": "exemplo@email.com",
+            "description": "Enviado para"
+          },
+          "enviado_em": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora de envio",
+            "example": "2023-12-31T12:00:00Z"
+          },
+          "aberto_em": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora de abertura",
+            "example": "2023-12-31T12:00:00Z"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StatusVisualizacaoMensagem"
+          }
+        }
+      },
+      "TipoOperacao": {
+        "type": "string",
+        "enum": [
+          "VENDA",
+          "REMESSA",
+          "COMPRA",
+          "DEVOLUCAO"
+        ],
+        "example": "VENDA"
+      },
+      "TemplateNaturezaOperacao": {
+        "type": "string",
+        "example": "VENDA_MERCADORIAS",
+        "enum": [
+          "VENDA_MERCADORIAS",
+          "VENDA_SUFRAMA",
+          "VENDA_ENTREGA_FUTURA",
+          "VENDA_CONSIGNADA",
+          "VENDA_NAO_CONTRIBUINTE",
+          "VENDA_EXPORTACAO",
+          "VENDA_ORDEM",
+          "VENDA_INDUSTRIALIZACAO",
+          "PRESTACAO_SERVICO"
+        ]
+      },
+      "MudancaEstoque": {
+        "type": "string",
+        "example": "ENTRADA_ESTOQUE",
+        "enum": [
+          "ENTRADA_ESTOQUE",
+          "SAIDA_ESTOQUE",
+          "NAO_ALTERA_ESTOQUE"
+        ]
+      },
+      "TipoNegociacao": {
+        "type": "string",
+        "example": "VENDA",
+        "enum": [
+          "VENDA",
+          "COMPRA"
+        ]
+      },
+      "Status": {
+        "type": "string",
+        "example": "EM_ANDAMENTO",
+        "enum": [
+          "REVISAO_PENDENTE",
+          "EM_ORCAMENTO",
+          "ORCAMENTO_ACEITO",
+          "ORCAMENTO_RECUSADO",
+          "EM_ANDAMENTO",
+          "CONTRATO",
+          "CANCELADO",
+          "PREVISAO",
+          "INCOMPLETA"
+        ]
+      },
+      "ConfiguracaoDesconto": {
+        "type": "object",
+        "properties": {
+          "tipo_desconto": {
+            "$ref": "#/components/schemas/TipoDesconto"
+          },
+          "taxa_desconto": {
+            "type": "number",
+            "format": "double",
+            "example": 10
+          }
+        }
+      },
+      "ComposicaoValor": {
+        "type": "object",
+        "properties": {
+          "valor_bruto": {
+            "type": "number",
+            "format": "double",
+            "example": 1000
+          },
+          "desconto": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "frete": {
+            "type": "number",
+            "format": "double",
+            "example": 50
+          },
+          "impostos": {
+            "type": "number",
+            "format": "double",
+            "example": 50
+          },
+          "impostos_deduzidos": {
+            "type": "number",
+            "format": "double",
+            "example": 20
+          },
+          "seguro": {
+            "type": "number",
+            "format": "double",
+            "example": 30
+          },
+          "despesas_incidentais": {
+            "type": "number",
+            "format": "double",
+            "example": 20
+          },
+          "valor_liquido": {
+            "type": "number",
+            "format": "double",
+            "example": 900
+          }
+        }
+      },
+      "CondicaoPagamento": {
+        "type": "object",
+        "properties": {
+          "tipo_pagamento": {
+            "$ref": "#/components/schemas/FormaPagamento"
+          },
+          "id_conta_financeira": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "pagamento_a_vista": {
+            "type": "boolean",
+            "example": false
+          },
+          "parcelas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParcelaNegociacao"
+            }
+          },
+          "observacoes_pagamento": {
+            "type": "string",
+            "description": "Observações sobre o pagamento",
+            "example": "Observações sobre o pagamento"
+          },
+          "opcao_condicao_pagamento": {
+            "type": "string",
+            "description": "Opção de condição de pagamento",
+            "example": "À vista"
+          },
+          "nsu": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "pagamento_cartao": {
+            "$ref": "#/components/schemas/PagamentoCartao"
+          }
+        }
+      },
+      "ItensTotaisNegociacao": {
+        "type": "object",
+        "properties": {
+          "contagem_produtos": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "contagem_servicos": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "contagem_nao_conciliados": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          }
+        }
+      },
+      "TipoPendente": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "enum": [
+              "NENHUMA",
+              "RESERVA_DE_ESTOQUE",
+              "CONCILIACAO_ITENS",
+              "PROCESSAMENTO_RESERVA_DE_ESTOQUE",
+              "ESPERANDO_CONFIRMACAO",
+              "AGUARDANDO_GERACAO_NOTA_FISCAL"
+            ],
+            "description": "Nome da pendência",
+            "example": "NENHUMA"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição da pendência",
+            "example": "Nenhuma"
+          }
+        }
+      },
+      "SituacaoNegociacao": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "enum": [
+              "EM_ANDAMENTO",
+              "APROVADO",
+              "FATURADO",
+              "CANCELADO",
+              "ORCAMENTO",
+              "ORCAMENTO_ACEITO",
+              "ORCAMENTO_RECUSADO",
+              "CONTRATO",
+              "VENDA"
+            ],
+            "description": "Nome da situação",
+            "example": "APROVADO"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição da situação",
+            "example": "Aprovado"
+          },
+          "ativado": {
+            "type": "boolean",
+            "description": "Ativado ou não",
+            "example": true
+          }
+        }
+      },
+      "StatusVisualizacaoMensagem": {
+        "type": "string",
+        "example": "ENVIADO",
+        "enum": [
+          "ENVIADO",
+          "LIDO"
+        ]
+      },
+      "TipoDesconto": {
+        "type": "string",
+        "example": "VALOR",
+        "enum": [
+          "PORCENTAGEM",
+          "VALOR"
+        ]
+      },
+      "ParcelaNegociacao": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id da parcela",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "numero": {
+            "type": "integer",
+            "example": 1,
+            "description": "Número da parcela"
+          },
+          "data_vencimento": {
+            "format": "date",
+            "example": "2023-12-31",
+            "description": "Data de vencimento"
+          },
+          "valor": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor da parcela",
+            "example": 26.99
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Parcela 1",
+            "description": "Descrição da parcela"
+          }
+        }
+      },
+      "PagamentoCartao": {
+        "type": "object",
+        "properties": {
+          "tipo_bandeira": {
+            "$ref": "#/components/schemas/BandeiraCartao"
+          },
+          "codigo_transacao": {
+            "type": "string",
+            "example": "ABC123XYZ789"
+          },
+          "id_adquirente": {
+            "type": "integer",
+            "format": "int64",
+            "example": 123456789
+          }
+        }
+      },
+      "BandeiraCartao": {
+        "type": "string",
+        "example": "VISA",
+        "enum": [
+          "VISA",
+          "MASTERCARD",
+          "AMERICAN_EXPRESS",
+          "SOROCRED",
+          "DINERS_CLUB",
+          "ELO",
+          "HIPERCARD",
+          "AURA",
+          "CABAL",
+          "ALELO",
+          "BANES_CARD",
+          "CALCARDS",
+          "CREDZ",
+          "DISCOVER",
+          "GOODCARD",
+          "GREENCARD",
+          "HIPER",
+          "JCB",
+          "MAIS",
+          "MAXVAN",
+          "POLICARD",
+          "REDECOMPRAS",
+          "SODEXO",
+          "VALECARD",
+          "VEROCHEQUE",
+          "VR",
+          "TICKET",
+          "OUTROS"
+        ]
+      },
+      "FormaPagamento": {
+        "type": "string",
+        "example": "CARTAO_CREDITO",
+        "enum": [
+          "BOLETO_BANCARIO",
+          "CARTAO_CREDITO",
+          "CARTAO_DEBITO",
+          "CARTEIRA_DIGITAL",
+          "CASHBACK",
+          "CHEQUE",
+          "CREDITO_LOJA",
+          "CREDITO_VIRTUAL",
+          "DEPOSITO_BANCARIO",
+          "DINHEIRO",
+          "OUTRO",
+          "DEBITO_AUTOMATICO",
+          "LINK_PAGAMENTO",
+          "PIX_PAGAMENTO_INSTANTANEO",
+          "COBRANCA_PIX",
+          "PROGRAMA_FIDELIDADE",
+          "SEM_PAGAMENTO",
+          "TRANSFERENCIA_BANCARIA",
+          "VALE_ALIMENTACAO",
+          "VALE_COMBUSTIVEL",
+          "VALE_PRESENTE",
+          "VALE_REFEICAO"
+        ]
+      },
+      "CriacaoVendaRequest": {
+        "type": "object",
+        "required": [
+          "id_cliente",
+          "numero",
+          "situacao",
+          "data_venda",
+          "itens",
+          "condicao_pagamento"
+        ],
+        "properties": {
+          "id_cliente": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do cliente",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "numero": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Número da venda",
+            "example": 1001
+          },
+          "situacao": {
+            "type": "string",
+            "description": "Situação da venda",
+            "example": "EM_ANDAMENTO",
+            "enum": [
+              "EM_ANDAMENTO",
+              "APROVADO"
+            ]
+          },
+          "data_venda": {
+            "type": "string",
+            "format": "date",
+            "description": "Data da venda",
+            "example": "2023-12-31"
+          },
+          "id_categoria": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id da categoria",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "id_centro_custo": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do centro de custo",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "id_vendedor": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do vendedor",
+            "example": "40bbdaa5-65c2-49e9-b892-470fd1093ed3"
+          },
+          "observacoes": {
+            "type": "string",
+            "description": "Observações sobre a venda",
+            "example": "Observações sobre a venda"
+          },
+          "observacoes_pagamento": {
+            "type": "string",
+            "description": "Observações sobre o pagamento",
+            "example": "Observações sobre o pagamento"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemVendaRequest"
+            }
+          },
+          "composicao_de_valor": {
+            "$ref": "#/components/schemas/ValorComposicaoRequest"
+          },
+          "condicao_pagamento": {
+            "$ref": "#/components/schemas/CondicaoPagamentoRequest"
+          }
+        }
+      },
+      "ItemVendaRequest": {
+        "type": "object",
+        "required": [
+          "id",
+          "quantidade",
+          "valor"
+        ],
+        "properties": {
+          "descricao": {
+            "type": "string",
+            "example": "Produto A",
+            "description": "Descrição do item da venda"
+          },
+          "quantidade": {
+            "type": "number",
+            "format": "double",
+            "example": 2,
+            "description": "Quantidade do item da venda"
+          },
+          "valor": {
+            "type": "number",
+            "format": "double",
+            "example": 50,
+            "description": "Valor do item da venda"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "description": "id do item da venda"
+          },
+          "valor_custo": {
+            "type": "number",
+            "format": "double",
+            "example": 40,
+            "description": "Valor de custo do item da venda."
+          }
+        }
+      },
+      "ValorComposicaoRequest": {
+        "type": "object",
+        "properties": {
+          "frete": {
+            "type": "number",
+            "format": "double",
+            "example": 100,
+            "description": "Valor de frete."
+          },
+          "desconto": {
+            "$ref": "#/components/schemas/DiscountMonolithTranslatedDTO"
+          }
+        }
+      },
+      "CondicaoPagamentoRequest": {
+        "type": "object",
+        "required": [
+          "opcao_condicao_pagamento",
+          "parcelas"
+        ],
+        "properties": {
+          "tipo_pagamento": {
+            "type": "string",
+            "description": "Forma de pagamento",
+            "enum": [
+              "BOLETO_BANCARIO",
+              "CARTAO_CREDITO",
+              "CARTAO_DEBITO",
+              "CARTEIRA_DIGITAL",
+              "CASHBACK",
+              "CHEQUE",
+              "CREDITO_LOJA",
+              "CREDITO_VIRTUAL",
+              "DEPOSITO_BANCARIO",
+              "DINHEIRO",
+              "OUTRO",
+              "DEBITO_AUTOMATICO",
+              "CARTAO_CREDITO_VIA_LINK",
+              "PIX_PAGAMENTO_INSTANTANEO",
+              "PIX_COBRANCA",
+              "PROGRAMA_FIDELIDADE",
+              "SEM_PAGAMENTO",
+              "TRANSFERENCIA_BANCARIA",
+              "VALE_ALIMENTACAO",
+              "VALE_COMBUSTIVEL",
+              "VALE_PRESENTE",
+              "VALE_REFEICAO"
+            ],
+            "example": "CARTAO_CREDITO"
+          },
+          "id_conta_financeira": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "description": "id da conta financeira"
+          },
+          "opcao_condicao_pagamento": {
+            "type": "string",
+            "example": "À vista",
+            "description": "Deve ser em um dos três formatos: - 1º: Ex: À vista. - 2º: Ex1: 30, 60, 90. Ex2: 15, 30, 45. - 3º: Ex1: 3x. Ex2: 12x"
+          },
+          "nsu": {
+            "type": "string",
+            "example": "1234567890",
+            "description": "NSU"
+          },
+          "parcelas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParcelaRequest"
+            }
+          }
+        }
+      },
+      "ParcelaRequest": {
+        "type": "object",
+        "required": [
+          "data_vencimento",
+          "valor"
+        ],
+        "properties": {
+          "data_vencimento": {
+            "type": "string",
+            "format": "date",
+            "example": "2023-12-31",
+            "description": "Data de vencimento"
+          },
+          "valor": {
+            "type": "number",
+            "format": "double",
+            "example": 100,
+            "description": "Valor da parcela"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Parcela 1",
+            "description": "Descrição da parcela"
+          }
+        }
+      },
+      "CriacaoVendaResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id único da venda",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "id_legado": {
+            "type": "integer",
+            "format": "int64",
+            "description": "id legado necessário para a venda",
+            "example": 123456
+          },
+          "id_cliente": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do cliente associado à venda",
+            "example": "123e4567-e89b-12d3-a456-426614174001"
+          },
+          "numero": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Número da venda",
+            "example": 1001
+          },
+          "origem": {
+            "type": "string",
+            "description": "Origem da venda",
+            "example": "Online"
+          },
+          "id_categoria": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id da categoria da venda",
+            "example": "123e4567-e89b-12d3-a456-426614174002"
+          },
+          "data_venda": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data da venda",
+            "example": "2023-10-01T12:00:00Z"
+          },
+          "situacao": {
+            "$ref": "#/components/schemas/SituacaoResponse"
+          },
+          "pendencia": {
+            "$ref": "#/components/schemas/TipoPendenciaResponse"
+          },
+          "valor_composicao": {
+            "$ref": "#/components/schemas/ComposicaoValorResponse"
+          },
+          "condicao_pagamento": {
+            "$ref": "#/components/schemas/CondicaoPagamentoResponse"
+          },
+          "observacoes": {
+            "type": "string",
+            "description": "Observações sobre a venda",
+            "example": "Cliente solicitou entrega rápida"
+          },
+          "id_vendedor": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do vendedor responsável pela venda",
+            "example": "123e4567-e89b-12d3-a456-426614174003"
+          },
+          "versao": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Versão da venda",
+            "example": 1
+          }
+        }
+      },
+      "SituacaoResponse": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "description": "Nome da situação",
+            "example": "Situação Exemplo"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição da situação",
+            "example": "Descrição da situação exemplo"
+          }
+        }
+      },
+      "TipoPendenciaResponse": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "description": "Nome da pendência",
+            "example": "AGUARDANDO_CONFIRMACAO"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição da pendência",
+            "example": "Aguardando confirmação"
+          }
+        }
+      },
+      "ComposicaoValorResponse": {
+        "type": "object",
+        "properties": {
+          "valor_bruto": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor bruto da venda",
+            "example": 100
+          },
+          "desconto": {
+            "$ref": "#/components/schemas/DiscountMonolithTranslatedDTO"
+          },
+          "frete": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor do frete",
+            "example": 10
+          },
+          "valor_liquido": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor líquido da venda",
+            "example": 90
+          }
+        }
+      },
+      "DiscountMonolithTranslatedDTO": {
+        "type": "object",
+        "required": [
+          "tipo",
+          "valor"
+        ],
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "description": "Tipo de desconto",
+            "example": "VALOR",
+            "enum": [
+              "PORCENTAGEM",
+              "VALOR"
+            ]
+          },
+          "valor": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor do desconto",
+            "example": 5
+          }
+        }
+      },
+      "CondicaoPagamentoResponse": {
+        "type": "object",
+        "properties": {
+          "id_legado": {
+            "type": "integer",
+            "format": "int64",
+            "example": 123456789,
+            "description": "id legado da condição de pagamento"
+          },
+          "tipo_pagamento": {
+            "type": "string",
+            "example": "CARTAO_CREDITO",
+            "description": "Tipo de pagamento",
+            "enum": [
+              "BOLETO_BANCARIO",
+              "CARTAO_CREDITO",
+              "CARTAO_DEBITO",
+              "CARTEIRA_DIGITAL",
+              "CASHBACK",
+              "CHEQUE",
+              "CREDITO_LOJA",
+              "CREDITO_VIRTUAL",
+              "DEPOSITO_BANCARIO",
+              "DINHEIRO",
+              "OUTRO",
+              "DEBITO_AUTOMATICO",
+              "CARTAO_CREDITO_VIA_LINK",
+              "PIX_PAGAMENTO_INSTANTANEO",
+              "PIX_COBRANCA",
+              "PROGRAMA_FIDELIDADE",
+              "SEM_PAGAMENTO",
+              "TRANSFERENCIA_BANCARIA",
+              "VALE_ALIMENTACAO",
+              "VALE_COMBUSTIVEL",
+              "VALE_PRESENTE",
+              "VALE_REFEICAO"
+            ]
+          },
+          "id_conta_financeira": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "description": "id da conta financeira"
+          },
+          "opcao_condicao_pagamento": {
+            "type": "string",
+            "example": "Parcelado",
+            "description": "Opção de condição de pagamento"
+          },
+          "parcelas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParcelaResponse"
+            }
+          },
+          "observacoes_pagamento": {
+            "type": "string",
+            "example": "Pagamento realizado em 3 parcelas",
+            "description": "Observações sobre o pagamento"
+          },
+          "nsu": {
+            "type": "string",
+            "example": "1234567890",
+            "description": "NSU"
+          },
+          "troco_total": {
+            "type": "number",
+            "format": "double",
+            "example": 10.5,
+            "description": "Troco total"
+          }
+        }
+      },
+      "ParcelaResponse": {
+        "type": "object",
+        "properties": {
+          "data_vencimento": {
+            "type": "string",
+            "format": "date",
+            "example": "2023-12-31",
+            "description": "Data de vencimento"
+          },
+          "valor": {
+            "type": "number",
+            "format": "double",
+            "example": 100,
+            "description": "Valor da parcela"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Parcela 1",
+            "description": "Descrição da parcela"
+          },
+          "numero": {
+            "type": "integer",
+            "example": 1,
+            "description": "Número da parcela"
+          }
+        }
+      },
+      "ExclusaoResponse": {
+        "type": "object",
+        "properties": {
+          "atualizados": {
+            "type": "integer",
+            "description": "Indica quantidade excluída",
+            "example": 1
+          },
+          "ignorados": {
+            "type": "integer",
+            "description": "Indica quantidade ignorada",
+            "example": 1
+          }
+        }
+      },
+      "VendaParaEdicaoRequest": {
+        "type": "object",
+        "required": [
+          "versao",
+          "id_cliente",
+          "numero",
+          "situacao",
+          "data_venda",
+          "itens",
+          "condicao_pagamento"
+        ],
+        "properties": {
+          "id_cliente": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "description": "uuid do cliente"
+          },
+          "numero": {
+            "type": "integer",
+            "example": 1,
+            "description": "Número da venda"
+          },
+          "data_venda": {
+            "type": "string",
+            "format": "date",
+            "example": "2023-12-31",
+            "description": "Data da venda"
+          },
+          "situacao": {
+            "type": "string",
+            "description": "Situação da venda",
+            "example": "APROVADO",
+            "enum": [
+              "EM_ANDAMENTO",
+              "APROVADO",
+              "FATURADO",
+              "CANCELADO"
+            ]
+          },
+          "observacoes": {
+            "type": "string",
+            "example": "Cliente solicitou entrega rápida",
+            "description": "Observações sobre a venda"
+          },
+          "observacoes_pagamento": {
+            "type": "string",
+            "example": "Pagamento realizado em 3 parcelas",
+            "description": "Observações sobre o pagamento"
+          },
+          "id_natureza_operacao": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "description": "id da natureza da operação"
+          },
+          "versao": {
+            "type": "integer",
+            "example": 1,
+            "description": "Versão da venda é obrigatório na edição"
+          },
+          "itens": {
+            "type": "array",
+            "$ref": "#/components/schemas/ItemVendaRequest"
+          },
+          "composicao_de_valor": {
+            "$ref": "#/components/schemas/ValorComposicaoRequest"
+          },
+          "condicao_pagamento": {
+            "$ref": "#/components/schemas/CondicaoPagamentoRequest"
+          }
+        }
+      },
+      "VendaEditadaResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "uuid da venda editada"
+          },
+          "id_legado": {
+            "type": "integer",
+            "example": 123456,
+            "description": "id legado"
+          }
+        }
+      },
+      "Vendedor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "id do vendedor"
+          },
+          "nome": {
+            "type": "string",
+            "example": "João da Silva",
+            "description": "Nome do vendedor"
+          },
+          "id_legado": {
+            "type": "integer",
+            "example": 123456,
+            "description": "id legado do vendedor"
+          }
+        }
+      },
+      "Contrato": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "id do contrato"
+          },
+          "data_inicio": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de início do contrato",
+            "example": "2023-12-31"
+          },
+          "data_fim": {
+            "type": "string",
+            "format": "date",
+            "description": "Data final do contrato",
+            "example": "2024-12-31"
+          },
+          "dia_vencimento": {
+            "type": "integer",
+            "example": 10,
+            "description": "Dia do vencimento de cada fatura gerada pelo contrato"
+          },
+          "periodo": {
+            "type": "string",
+            "example": "MENSAL",
+            "description": "Período de faturamento do contrato",
+            "enum": [
+              "MENSAL",
+              "SEMANAL",
+              "ANUAL"
+            ]
+          },
+          "periodicidade": {
+            "type": "integer",
+            "example": 1,
+            "description": "Periodicidade do contrato, ou seja, a cada quantos períodos será gerada uma fatura. Exemplo: periodicidade 2 e período MENSAL significa que a fatura será gerada a cada 2 meses."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2660 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "A API de Pessoas (v1) tem como objetivo permitir o cadastro, consulta, ativação, desativação, exclusão e atualização dos registros de pessoas (clientes, fornecedores, transportadoras) no sistema da Conta Azul.\n\nPor meio dessa funcionalidade, sistemas externos podem manter seus cadastros sincronizados, automatizar a gestão de perfis de pessoas e garantir que os dados estejam sempre atualizados entre plataformas.\n\n---\n\nSe desejar aprofundar o entendimento das regras de negócio aplicadas pelo ERP, recomendamos, de forma opcional a consulta à nossa Central de Ajuda:\n\nClientes: [https://ajuda.contaazul.com/hc/pt-br/articles/115007916448-Clientes-como-cadastrar](https://ajuda.contaazul.com/hc/pt-br/articles/115007916448-Clientes-como-cadastrar)\n",
+    "title": "Pessoas",
+    "contact": {},
+    "version": "v1"
+  },
+  "paths": {
+    "/v1/pessoas": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permite consultar as pessoas cadastradas, com suporte a filtros como página, tamanho, ordenação, busca por nome, documento, email, tipo de perfil, entre outros. Essa funcionalidade facilita a listagem, o monitoramento de pessoas no sistema.",
+        "tags": [
+          "v1"
+        ],
+        "summary": "Retornar as pessoas por filtro",
+        "operationId": "retornaPessoasPorFiltros",
+        "parameters": [
+          {
+            "description": "Página",
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "description": "Tamanho da página",
+            "name": "tamanho_pagina",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                10,
+                20,
+                50,
+                100,
+                200,
+                500,
+                1000
+              ],
+              "default": 10
+            }
+          },
+          {
+            "description": "Tipo de ordenação",
+            "name": "tipo_ordenacao",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NOME",
+                "EMAIL",
+                "DOCUMENTO",
+                "ATIVO"
+              ],
+              "default": "NOME"
+            }
+          },
+          {
+            "description": "Ordem de ordenação",
+            "name": "ordem_ordenacao",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          },
+          {
+            "description": "Busca textual pelo documento ou nome do cliente/empresa",
+            "name": "busca",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "IDs das pessoas",
+            "name": "ids",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Documentos das pessoas (CPF/CNPJ)",
+            "name": "documentos",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Países das pessoas",
+            "name": "paises",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Cidades das pessoas",
+            "name": "cidades",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Abreviações das unidades federativas (estados) das pessoas",
+            "name": "ufs",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Códigos de cadastro das pessoas",
+            "name": "codigos_pessoa",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Emails das pessoas",
+            "name": "emails",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Tipos de pessoa",
+            "name": "tipos_pessoa",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Física",
+                "Jurídica",
+                "Estrangeira"
+              ],
+              "default": "Física"
+            }
+          },
+          {
+            "description": "Nomes das pessoas, pode ser pessoa física, jurídica ou estrangeira",
+            "name": "nomes",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Telefones das pessoas",
+            "name": "telefones",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Data de início para filtrar pessoas criadas a partir dessa data, obrigatório se data_criacao_fim for preenchido",
+            "name": "data_criacao_inicio",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Data de fim para filtrar pessoas criadas até essa data, obrigatório se data_criacao_inicio for preenchido",
+            "name": "data_criacao_fim",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Data de alteracao de (ISO 8601, São Paulo/GMT-3)",
+            "name": "data_alteracao_de",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Data de alteracao até (ISO 8601, São Paulo/GMT-3)",
+            "name": "data_alteracao_ate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Tipo de perfil da pessoa",
+            "name": "tipo_perfil",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Cliente",
+                "Fornecedor",
+                "Transportadora"
+              ],
+              "default": "Cliente"
+            }
+          },
+          {
+            "description": "Indica se deve retornar pessoas com endereço",
+            "name": "com_endereco",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumoDePessoasPorFiltro"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permite criar uma nova pessoa, informando dados como nome, tipo de pessoa (Física, Jurídica ou Estrangeira), documentos (CPF, CNPJ), email, perfis associados, endereços e outros parâmetros. Esse endpoint viabiliza a automação de cadastro de clientes, fornecedores e transportadoras.",
+        "tags": [
+          "v1"
+        ],
+        "summary": "Criar uma nova pessoa",
+        "operationId": "criarPessoa",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarPessoa"
+              }
+            }
+          },
+          "description": "Dados da pessoa a ser criada",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumoCriacaoPessoa"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pessoas/ativar": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permite ativar em lote um conjunto de pessoas previamente inativadas ou que estejam com status desativado. Essa funcionalidade é útil para reativar perfis inativos de forma massiva.",
+        "tags": [
+          "v1"
+        ],
+        "summary": "Ativar pessoas em lote",
+        "operationId": "ativarPessoasEmLote",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParamAtualizarStatusPessoasEmLote"
+              }
+            }
+          },
+          "description": "IDs das pessoas a serem ativadas",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AtualizarStatusPessoasEmLote"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pessoas/excluir": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permite excluir pessoas em lote, a partir de seus identificadores.",
+        "tags": [
+          "v1"
+        ],
+        "summary": "Excluir pessoas em lote",
+        "operationId": "excluirPessoasEmLote",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParamDeletarPessoasEmLote"
+              }
+            }
+          },
+          "description": "IDs das pessoas a serem deletadas",
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pessoas/inativar": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permite inativar em lote pessoas, alterando seu status para \"inativo\". Útil para automações de limpeza de cadastros ou para perfis que não precisam mais estar ativos.",
+        "tags": [
+          "v1"
+        ],
+        "summary": "Desativar pessoas em lote",
+        "operationId": "desativarPessoasEmLote",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParamAtualizarStatusPessoasEmLote"
+              }
+            }
+          },
+          "description": "IDs das pessoas a serem desativadas",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AtualizarStatusPessoasEmLote"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pessoas/legado/{id}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Esse endpoint existe para garantir compatibilidade entre a API antiga (V1 legada) e a API nova de Pessoas. Quando você faz requisições na API nova, cada pessoa passa a ter um UUID, que é o novo identificador usado pelo ERP e pelas integrações atuais. Ao mesmo tempo, algumas aplicações antigas ainda usam o id_legado, que era o identificador utilizado na API V1. Importante saber - Relação entre os IDs: uuid → ID novo da pessoa (padrão atual), id_legado → ID antigo, usado na primeira versão da API.",
+        "tags": [
+          "v1"
+        ],
+        "summary": "Retornar a pessoa por legacyid",
+        "operationId": "retornaPessoaPorLegacyId",
+        "parameters": [
+          {
+            "description": "legacyId da pessoa",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pessoa"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pessoas/{id}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permite consultar os detalhes de uma pessoa específica pelo seu identificador (id). A resposta inclui campos completos como nome, tipo de pessoa, documentos, perfis, contatos, endereços e demais informações pertinentes ao cadastro.",
+        "tags": [
+          "v1"
+        ],
+        "summary": "Retornar a pessoa por id",
+        "operationId": "retornaPessoaPorId",
+        "parameters": [
+          {
+            "description": "id da pessoa",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pessoa"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permite substituir ou atualizar integralmente o cadastro de uma pessoa existente identificada por id. Indicada quando há necessidade de modificar vários campos de uma vez.",
+        "tags": [
+          "v1"
+        ],
+        "summary": "Atualizar uma pessoa por id",
+        "operationId": "atualizarPessoaPorId",
+        "parameters": [
+          {
+            "description": "ID da pessoa a ser atualizada",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarPessoa"
+              }
+            }
+          },
+          "description": "Dados da pessoa a ser atualizada",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumoAtualizacaoPessoa"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permite atualizar parcialmente o cadastro de uma pessoa existente (por exemplo: alterar email, telefone, tipo de perfil ou endereço) identificada por id. Essa abordagem garante menor impacto e maior controle na atualização dos dados.",
+        "tags": [
+          "v1"
+        ],
+        "summary": "Atualizar parcialmente uma pessoa por id",
+        "operationId": "atualizarParcialmentePessoa",
+        "parameters": [
+          {
+            "description": "ID da pessoa a ser atualizada",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizacaoParcialPessoa"
+              }
+            }
+          },
+          "description": "Dados da pessoa a serem atualizados",
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroAPI"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Operações relacionadas a pessoas",
+      "name": "v1"
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api-v2.contaazul.com"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "description": "Digite **'Bearer &lt;JWT&gt;'**, onde JWT é o access_token recebido no login (passo 2 do fluxo de autenticação).",
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "AtualizacaoEnderecoPessoa": {
+        "description": "Modelo de atualização de endereço de pessoa",
+        "type": "object",
+        "required": [
+          "pais"
+        ],
+        "properties": {
+          "bairro": {
+            "description": "Bairro do endereço",
+            "type": "string",
+            "maxLength": 100,
+            "example": "Centro"
+          },
+          "cep": {
+            "description": "CEP do endereço",
+            "type": "string",
+            "example": "12345-678"
+          },
+          "cidade": {
+            "description": "Cidade do endereço",
+            "type": "string",
+            "example": "São Paulo"
+          },
+          "complemento": {
+            "description": "Complemento do endereço",
+            "type": "string",
+            "maxLength": 200,
+            "example": "Apto 45"
+          },
+          "estado": {
+            "description": "Estado do endereço",
+            "type": "string",
+            "example": "SP"
+          },
+          "id": {
+            "description": "ID do endereço",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "logradouro": {
+            "description": "Logradouro do endereço",
+            "type": "string",
+            "maxLength": 100,
+            "example": "Rua das Flores"
+          },
+          "numero": {
+            "description": "Número do endereço",
+            "type": "string",
+            "maxLength": 10,
+            "example": "123"
+          },
+          "pais": {
+            "description": "País do endereço (Brasil se tipo_pessoa for Física ou Jurídica)",
+            "type": "string",
+            "example": "Brasil"
+          }
+        }
+      },
+      "AtualizacaoInscricaoPessoa": {
+        "description": "Modelo de atualização de inscrição de pessoa",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "ID da inscrição",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "indicador_inscricao_estadual": {
+            "description": "Indicador de inscrição estadual: NAO CONTRIBUINTE, CONTRIBUINTE ou ISENTO",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Indicador"
+              }
+            ]
+          },
+          "inscricao_estadual": {
+            "description": "Inscrição estadual",
+            "type": "string",
+            "maxLength": 20,
+            "example": "123456789"
+          },
+          "inscricao_municipal": {
+            "description": "Inscrição municipal",
+            "type": "string",
+            "maxLength": 20,
+            "example": "123456789"
+          },
+          "inscricao_suframa": {
+            "description": "Inscrição SUFRAMA",
+            "type": "string",
+            "maxLength": 9,
+            "minLength": 8,
+            "example": "123456789"
+          }
+        }
+      },
+      "AtualizacaoOutroContatoPessoa": {
+        "description": "Modelo de atualização de outros contatos de pessoa",
+        "type": "object",
+        "required": [
+          "cargo",
+          "email",
+          "nome",
+          "telefone_celular",
+          "telefone_comercial"
+        ],
+        "properties": {
+          "cargo": {
+            "description": "Cargo do contato",
+            "type": "string",
+            "maxLength": 40,
+            "example": "Gerente"
+          },
+          "email": {
+            "description": "Email do contato",
+            "type": "string",
+            "maxLength": 100,
+            "example": "maria.silva@email.com"
+          },
+          "id": {
+            "description": "ID do contato",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "nome": {
+            "description": "Nome do contato",
+            "type": "string",
+            "maxLength": 40,
+            "example": "Maria Silva"
+          },
+          "telefone_celular": {
+            "description": "Telefone celular",
+            "type": "string",
+            "example": "(11) 98765-4321"
+          },
+          "telefone_comercial": {
+            "description": "Telefone comercial do contato",
+            "type": "string",
+            "example": "(11) 1234-5678"
+          }
+        }
+      },
+      "AtualizacaoParcialPessoa": {
+        "description": "Modelo de atualização parcial de pessoa",
+        "type": "object",
+        "properties": {
+          "agencia_publica": {
+            "description": "Indica se a pessoa é uma agência pública",
+            "type": "boolean",
+            "example": true
+          },
+          "ativo": {
+            "description": "Indica se a pessoa está ativa",
+            "type": "boolean",
+            "example": true
+          },
+          "cnpj": {
+            "description": "CNPJ da pessoa jurídica",
+            "type": "string",
+            "example": "12.345.678/0001-90"
+          },
+          "codigo": {
+            "description": "Código da pessoa",
+            "type": "string",
+            "example": "CLI001"
+          },
+          "cpf": {
+            "description": "CPF da pessoa física",
+            "type": "string",
+            "example": "123.456.789-00"
+          },
+          "data_nascimento": {
+            "description": "Data de nascimento da pessoa física",
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "email": {
+            "description": "Emails da pessoa separados por vírgula",
+            "type": "string",
+            "example": "joao.silva@email.com, maria.silva@email.com"
+          },
+          "enderecos": {
+            "description": "Lista de endereços",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnderecoAtualizacaoParcial"
+            }
+          },
+          "inscricoes": {
+            "description": "Lista de inscrições estaduais e municipais",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InscricaoAtualizacaoParcial"
+            }
+          },
+          "nome": {
+            "description": "Nome da pessoa",
+            "type": "string",
+            "example": "João Silva"
+          },
+          "nome_empresa": {
+            "description": "Nome fantasia da pessoa jurídica",
+            "type": "string",
+            "example": "Empresa LTDA"
+          },
+          "observacao": {
+            "description": "Observações sobre a pessoa",
+            "type": "string",
+            "example": "Cliente preferencial"
+          },
+          "optante_simples_nacional": {
+            "description": "Indica se a pessoa é optante pelo Simples Nacional",
+            "type": "boolean",
+            "example": true
+          },
+          "perfis": {
+            "description": "Lista de perfis associados à pessoa",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AtualizacaoTipoPerfil"
+            }
+          },
+          "rg": {
+            "description": "Registro Geral (RG) da pessoa",
+            "type": "string",
+            "example": "12.345.678-9"
+          },
+          "telefone_celular": {
+            "description": "Telefone celular",
+            "type": "string",
+            "example": "11987654321"
+          },
+          "telefone_comercial": {
+            "description": "Telefone comercial da pessoa",
+            "type": "string",
+            "example": "1112345678"
+          },
+          "tipo_pessoa": {
+            "description": "Tipo de pessoa: Física, Jurídica ou Estrangeira",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoPessoa"
+              }
+            ],
+            "example": "Física"
+          }
+        }
+      },
+      "AtualizacaoTipoPerfil": {
+        "description": "Modelo atualização de tipo de perfil",
+        "type": "object",
+        "required": [
+          "tipo_perfil"
+        ],
+        "properties": {
+          "tipo_perfil": {
+            "description": "Tipo de perfil: Cliente, Fornecedor ou Transportadora",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Perfil"
+              }
+            ],
+            "example": "Cliente"
+          }
+        }
+      },
+      "AtualizarPessoa": {
+        "description": "Modelo de atualização de pessoa",
+        "type": "object",
+        "required": [
+          "codigo",
+          "data_nascimento",
+          "email",
+          "enderecos",
+          "nome",
+          "observacao",
+          "outros_contatos",
+          "perfis",
+          "telefone_celular",
+          "telefone_comercial",
+          "tipo_pessoa"
+        ],
+        "properties": {
+          "agencia_publica": {
+            "description": "Indica se a pessoa é uma agência pública",
+            "type": "boolean",
+            "example": false
+          },
+          "ativo": {
+            "description": "Indica se a pessoa está ativa",
+            "type": "boolean",
+            "example": true
+          },
+          "cnpj": {
+            "description": "CNPJ da pessoa jurídica",
+            "type": "string",
+            "example": "12.345.678/0001-90"
+          },
+          "codigo": {
+            "description": "Código da pessoa",
+            "type": "string",
+            "maxLength": 20,
+            "example": "CLI001"
+          },
+          "cpf": {
+            "description": "CPF da pessoa física",
+            "type": "string",
+            "example": "123.456.789-00"
+          },
+          "data_nascimento": {
+            "description": "Data de nascimento da pessoa física",
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "email": {
+            "description": "Emails da pessoa separados por vírgula",
+            "type": "string",
+            "maxLength": 100,
+            "example": "joao.silva@email.com, maria.silva@email.com"
+          },
+          "enderecos": {
+            "description": "Lista de endereços",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AtualizacaoEnderecoPessoa"
+            }
+          },
+          "inscricoes": {
+            "description": "Lista de inscrições estaduais e municipais",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AtualizacaoInscricaoPessoa"
+            }
+          },
+          "nome": {
+            "description": "Nome da pessoa",
+            "type": "string",
+            "maxLength": 200,
+            "example": "João Silva"
+          },
+          "nome_fantasia": {
+            "description": "Nome fantasia da pessoa jurídica",
+            "type": "string",
+            "maxLength": 200,
+            "example": "Empresa LTDA"
+          },
+          "observacao": {
+            "description": "Observações sobre a pessoa",
+            "type": "string",
+            "maxLength": 2000,
+            "example": "Cliente preferencial"
+          },
+          "optante_simples": {
+            "description": "Indica se a pessoa é optante pelo Simples Nacional",
+            "type": "boolean",
+            "example": false
+          },
+          "outros_contatos": {
+            "description": "Lista de outros contatos da pessoa",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AtualizacaoOutroContatoPessoa"
+            }
+          },
+          "perfis": {
+            "description": "Lista de perfis associados à pessoa",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AtualizacaoTipoPerfil"
+            }
+          },
+          "rg": {
+            "description": "Registro Geral (RG) da pessoa",
+            "type": "string",
+            "maxLength": 50,
+            "example": "12.345.678-9"
+          },
+          "telefone_celular": {
+            "description": "Telefone celular",
+            "type": "string",
+            "example": "(11) 98765-4321"
+          },
+          "telefone_comercial": {
+            "description": "Telefone comercial da pessoa",
+            "type": "string",
+            "example": "(11) 1234-5678"
+          },
+          "tipo_pessoa": {
+            "description": "Tipo de pessoa: Física, Jurídica ou Estrangeira",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoPessoa"
+              }
+            ]
+          }
+        }
+      },
+      "AtualizarStatusPessoasEmLote": {
+        "description": "Detalha quais IDs foram processados e qual foi o resultado para cada grupo (ativos/inativos)",
+        "type": "object",
+        "properties": {
+          "ativos": {
+            "description": "Lista de IDs das pessoas ativadas",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "4BBDAE00-2242-4703-9310-9946D6C2D0A3"
+            ]
+          },
+          "inativos": {
+            "description": "Lista de IDs das pessoas inativadas",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "B6270060-3AB7-4E66-A99B-71084E385F47"
+            ]
+          },
+          "todos": {
+            "description": "Lista de todos os IDs das pessoas fornecidos na requisição",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "4BBDAE00-2242-4703-9310-9946D6C2D0A3",
+              "B6270060-3AB7-4E66-A99B-71084E385F47"
+            ]
+          }
+        }
+      },
+      "ContatoCobrancaFaturamento": {
+        "description": "Modelo de contato para cobrança e faturamento de pessoa",
+        "type": "object",
+        "properties": {
+          "emails": {
+            "description": "Email do contato de cobrança e faturamento",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "carlos.oliveira@email.com",
+              "joao.silva@email.com"
+            ]
+          },
+          "whatsapp": {
+            "description": "Telefone do contato de cobrança e faturamento",
+            "type": "string",
+            "example": "5511999999999"
+          }
+        }
+      },
+      "CriacaoContatoCobrancaFaturamento": {
+        "description": "Modelo de criação de contato para cobrança e faturamento de pessoa",
+        "type": "object",
+        "properties": {
+          "emails": {
+            "description": "Emails do contato de cobrança e faturamento",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "carlos.oliveira@email.com",
+              "joao.silva@email.com"
+            ]
+          },
+          "whatsapp": {
+            "description": "Telefone do contato de cobrança e faturamento",
+            "type": "string",
+            "example": "5511999999999"
+          }
+        }
+      },
+      "CriacaoEnderecoPessoa": {
+        "description": "Modelo de criação de endereço de pessoa",
+        "type": "object",
+        "properties": {
+          "bairro": {
+            "description": "Bairro do endereço",
+            "type": "string",
+            "maxLength": 100,
+            "example": "Centro"
+          },
+          "cep": {
+            "description": "CEP do endereço",
+            "type": "string",
+            "example": "12345-678"
+          },
+          "cidade": {
+            "description": "Cidade do endereço",
+            "type": "string",
+            "example": "São Paulo"
+          },
+          "complemento": {
+            "description": "Complemento do endereço",
+            "type": "string",
+            "maxLength": 200,
+            "example": "Apto 45"
+          },
+          "estado": {
+            "description": "Estado do endereço",
+            "type": "string",
+            "example": "SP"
+          },
+          "logradouro": {
+            "description": "Logradouro do endereço",
+            "type": "string",
+            "maxLength": 100,
+            "example": "Rua das Flores"
+          },
+          "numero": {
+            "description": "Número do endereço",
+            "type": "string",
+            "maxLength": 10,
+            "example": "123"
+          },
+          "pais": {
+            "description": "País do endereço (Brasil se tipo_pessoa for Física ou Jurídica)",
+            "type": "string",
+            "example": "Brasil"
+          }
+        }
+      },
+      "CriacaoInscricaoPessoa": {
+        "description": "Modelo de criação de inscrição de pessoa",
+        "type": "object",
+        "properties": {
+          "indicador_inscricao_estadual": {
+            "description": "Indicador de inscrição estadual: NAO CONTRIBUINTE, CONTRIBUINTE ou ISENTO",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Indicador"
+              }
+            ],
+            "example": "NAO CONTRIBUINTE"
+          },
+          "inscricao_estadual": {
+            "description": "Inscrição estadual",
+            "type": "string",
+            "maxLength": 20,
+            "example": "123456789"
+          },
+          "inscricao_municipal": {
+            "description": "Inscrição municipal",
+            "type": "string",
+            "maxLength": 20,
+            "example": "123456789"
+          },
+          "inscricao_suframa": {
+            "description": "Inscrição SUFRAMA",
+            "type": "string",
+            "maxLength": 9,
+            "minLength": 8,
+            "example": "123456789"
+          }
+        }
+      },
+      "CriacaoOutroContatoPessoa": {
+        "description": "Modelo de criação de outros contatos de pessoa",
+        "type": "object",
+        "required": [
+          "nome"
+        ],
+        "properties": {
+          "cargo": {
+            "description": "Cargo do contato",
+            "type": "string",
+            "maxLength": 40,
+            "example": "Gerente"
+          },
+          "email": {
+            "description": "Email do contato",
+            "type": "string",
+            "maxLength": 100,
+            "example": "maria.silva@email.com"
+          },
+          "nome": {
+            "description": "Nome do contato",
+            "type": "string",
+            "maxLength": 40,
+            "example": "Maria Silva"
+          },
+          "telefone_celular": {
+            "description": "Telefone celular",
+            "type": "string",
+            "example": "11983899529"
+          },
+          "telefone_comercial": {
+            "description": "Telefone comercial do contato",
+            "type": "string",
+            "example": "1138185004"
+          }
+        }
+      },
+      "CriacaoPerfilPessoa": {
+        "description": "Modelo criação de perfil de pessoa",
+        "type": "object",
+        "required": [
+          "tipo_perfil"
+        ],
+        "properties": {
+          "tipo_perfil": {
+            "description": "Tipo de perfil: Cliente, Fornecedor ou Transportadora",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Perfil"
+              }
+            ],
+            "example": "Cliente"
+          }
+        }
+      },
+      "CriarPessoa": {
+        "description": "Modelo de criação de pessoa",
+        "type": "object",
+        "required": [
+          "nome",
+          "tipo_pessoa"
+        ],
+        "properties": {
+          "agencia_publica": {
+            "description": "Indica se a pessoa é uma agência pública",
+            "type": "boolean",
+            "example": true
+          },
+          "ativo": {
+            "description": "Indica se a pessoa está ativa",
+            "type": "boolean",
+            "example": true
+          },
+          "cnpj": {
+            "description": "CNPJ da pessoa jurídica",
+            "type": "string",
+            "example": "12.345.678/0001-90"
+          },
+          "codigo": {
+            "description": "Código da pessoa",
+            "type": "string",
+            "maxLength": 20,
+            "example": "CLI001"
+          },
+          "contato_cobranca_faturamento": {
+            "description": "Contato de cobrança e faturamento",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CriacaoContatoCobrancaFaturamento"
+              }
+            ]
+          },
+          "cpf": {
+            "description": "CPF da pessoa física",
+            "type": "string",
+            "example": "123.456.789-00"
+          },
+          "data_nascimento": {
+            "description": "Data de nascimento da pessoa física",
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "email": {
+            "description": "Emails da pessoa separados por vírgula",
+            "type": "string",
+            "maxLength": 100,
+            "example": "joao.silva@email.com, maria.silva@email.com"
+          },
+          "enderecos": {
+            "description": "Lista de endereços",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriacaoEnderecoPessoa"
+            }
+          },
+          "inscricoes": {
+            "description": "Lista de inscrições estaduais e municipais",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriacaoInscricaoPessoa"
+            }
+          },
+          "nome": {
+            "description": "Nome da pessoa",
+            "type": "string",
+            "maxLength": 200,
+            "example": "João Silva"
+          },
+          "nome_fantasia": {
+            "description": "Nome fantasia da pessoa jurídica",
+            "type": "string",
+            "maxLength": 200,
+            "example": "Empresa LTDA"
+          },
+          "observacao": {
+            "description": "Observações sobre a pessoa",
+            "type": "string",
+            "maxLength": 2000,
+            "example": "Cliente preferencial"
+          },
+          "optante_simples": {
+            "description": "Indica se a pessoa é optante pelo Simples Nacional",
+            "type": "boolean",
+            "example": true
+          },
+          "outros_contatos": {
+            "description": "Lista de outros contatos da pessoa",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriacaoOutroContatoPessoa"
+            }
+          },
+          "perfis": {
+            "description": "Lista de perfis associados à pessoa",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriacaoPerfilPessoa"
+            }
+          },
+          "rg": {
+            "description": "Registro Geral (RG) da pessoa",
+            "type": "string",
+            "maxLength": 50,
+            "example": "12.345.678-9"
+          },
+          "telefone_celular": {
+            "description": "Telefone celular",
+            "type": "string",
+            "example": "11983899529"
+          },
+          "telefone_comercial": {
+            "description": "Telefone comercial da pessoa",
+            "type": "string",
+            "example": "1138185004"
+          },
+          "tipo_pessoa": {
+            "description": "Tipo de pessoa: Física, Jurídica ou Estrangeira",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoPessoa"
+              }
+            ],
+            "example": "Física"
+          }
+        }
+      },
+      "EnderecoAtualizacaoParcial": {
+        "description": "Modelo de endereço para atualização parcial",
+        "type": "object",
+        "properties": {
+          "bairro": {
+            "description": "Bairro do endereço",
+            "type": "string",
+            "example": "Centro"
+          },
+          "cep": {
+            "description": "CEP do endereço",
+            "type": "string",
+            "example": "12345-678"
+          },
+          "cidade": {
+            "description": "Cidade do endereço",
+            "type": "string",
+            "example": "São Paulo"
+          },
+          "complemento": {
+            "description": "Complemento do endereço",
+            "type": "string",
+            "example": "Apto 45"
+          },
+          "estado": {
+            "description": "Estado do endereço",
+            "type": "string",
+            "example": "SP"
+          },
+          "id": {
+            "description": "ID do endereço",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "logradouro": {
+            "description": "Logradouro do endereço",
+            "type": "string",
+            "example": "Rua das Flores"
+          },
+          "numero": {
+            "description": "Número do endereço",
+            "type": "string",
+            "example": "123"
+          },
+          "pais": {
+            "description": "País do endereço",
+            "type": "string",
+            "example": "Brasil"
+          }
+        }
+      },
+      "EnderecoPessoa": {
+        "type": "object",
+        "properties": {
+          "bairro": {
+            "description": "Bairro do endereço",
+            "type": "string",
+            "example": "Centro"
+          },
+          "cep": {
+            "description": "CEP do endereço",
+            "type": "string",
+            "example": "12345-678"
+          },
+          "cidade": {
+            "description": "Cidade do endereço",
+            "type": "string",
+            "example": "São Paulo"
+          },
+          "complemento": {
+            "description": "Complemento do endereço",
+            "type": "string",
+            "example": "Apto 45"
+          },
+          "estado": {
+            "description": "Estado do endereço",
+            "type": "string",
+            "example": "SP"
+          },
+          "id": {
+            "description": "ID do endereço",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "id_cidade": {
+            "description": "ID da cidade",
+            "type": "integer",
+            "example": 3550308
+          },
+          "logradouro": {
+            "description": "Logradouro do endereço",
+            "type": "string",
+            "example": "Rua das Flores"
+          },
+          "numero": {
+            "description": "Número do endereço",
+            "type": "string",
+            "example": "123"
+          },
+          "pais": {
+            "description": "País do endereço",
+            "type": "string",
+            "example": "Brasil"
+          }
+        }
+      },
+      "ErroAPI": {
+        "description": "Modelo de resposta para erros da API",
+        "type": "object",
+        "properties": {
+          "error": {
+            "description": "Mensagem de erro",
+            "type": "string",
+            "example": "Mensagem de erro detalhada"
+          }
+        }
+      },
+      "Indicador": {
+        "description": "Enum de indicador de inscrição estadual",
+        "type": "string",
+        "enum": [
+          "NAO CONTRIBUINTE",
+          "CONTRIBUINTE",
+          "ISENTO"
+        ],
+        "x-enum-varnames": [
+          "NO_CONTRIBUTOR",
+          "CONTRIBUTOR",
+          "IMMUNE_CONTRIBUTOR"
+        ]
+      },
+      "InformacoesFiscais": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "ID da informação fiscal",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "indicador_inscricao_estadual": {
+            "description": "Indicador de inscrição estadual",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Indicador"
+              }
+            ],
+            "example": "NAO CONTRIBUINTE"
+          },
+          "inscricao_estadual": {
+            "description": "Inscrição estadual",
+            "type": "string",
+            "example": "123456789"
+          },
+          "inscricao_municipal": {
+            "description": "Inscrição municipal",
+            "type": "string",
+            "example": "12345678901234"
+          },
+          "inscricao_suframa": {
+            "description": "Inscrição SUFRAMA",
+            "type": "string",
+            "example": "123456789"
+          }
+        }
+      },
+      "InscricaoAtualizacaoParcial": {
+        "description": "Modelo de inscrição para atualização parcial",
+        "type": "object",
+        "properties": {
+          "indicador_inscricao_estadual": {
+            "description": "Indicador de inscrição estadual: NAO CONTRIBUINTE, CONTRIBUINTE ou ISENTO",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Indicador"
+              }
+            ],
+            "example": "NAO CONTRIBUINTE"
+          },
+          "inscricao_estadual": {
+            "description": "Inscrição estadual",
+            "type": "string",
+            "example": "123456789"
+          },
+          "inscricao_municipal": {
+            "description": "Inscrição municipal",
+            "type": "string",
+            "example": "123456789"
+          },
+          "inscricao_suframa": {
+            "description": "Inscrição SUFRAMA",
+            "type": "string",
+            "example": "123456789"
+          }
+        }
+      },
+      "InscricaoPessoa": {
+        "description": "Modelo de inscrição de pessoa",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "ID da inscrição",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "indicador_inscricao_estadual": {
+            "description": "Indicador de inscrição estadual: NAO CONTRIBUINTE, CONTRIBUINTE ou ISENTO",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Indicador"
+              }
+            ],
+            "example": "NAO CONTRIBUINTE"
+          },
+          "inscricao_estadual": {
+            "description": "Inscrição estadual",
+            "type": "string",
+            "example": "123456789"
+          },
+          "inscricao_municipal": {
+            "description": "Inscrição municipal",
+            "type": "string",
+            "example": "123456789"
+          },
+          "inscricao_suframa": {
+            "description": "Inscrição SUFRAMA",
+            "type": "string",
+            "example": "123456789"
+          }
+        }
+      },
+      "ItemResumoDePessoasPorFiltro": {
+        "description": "Item do resumo de pessoas por filtro",
+        "type": "object",
+        "properties": {
+          "ativo": {
+            "description": "Indica se a pessoa está ativa ou inativa",
+            "type": "boolean",
+            "example": true
+          },
+          "data_alteracao": {
+            "description": "Data/hora da última alteração",
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00"
+          },
+          "data_criacao": {
+            "description": "Data/hora de criação",
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00"
+          },
+          "documento": {
+            "description": "Documento da pessoa (CPF/CNPJ)",
+            "type": "string",
+            "example": "123.456.789-00"
+          },
+          "email": {
+            "description": "Email da pessoa",
+            "type": "string",
+            "example": "joao.silva@email.com"
+          },
+          "endereco": {
+            "description": "Endereço da pessoa",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EnderecoPessoa"
+              }
+            ]
+          },
+          "id": {
+            "description": "ID da pessoa",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "id_legado": {
+            "description": "ID legado da pessoa",
+            "type": "integer",
+            "example": 12345
+          },
+          "nome": {
+            "description": "Nome da pessoa (física, jurídica ou estrangeira)",
+            "type": "string",
+            "example": "João Silva"
+          },
+          "observacoes_gerais": {
+            "description": "Observações gerais sobre a pessoa",
+            "type": "string",
+            "example": "Cliente preferencial"
+          },
+          "perfis": {
+            "description": "Perfis associados à pessoa (Cliente, Fornecedor, Transportadora)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "CLIENTE",
+              "FORNECEDOR",
+              "TRANSPORTADORA"
+            ]
+          },
+          "telefone": {
+            "description": "Telefone da pessoa",
+            "type": "string",
+            "example": "(11) 1234-5678"
+          },
+          "tipo_pessoa": {
+            "description": "Tipo de pessoa (Física, Jurídica ou Estrangeira)",
+            "type": "string",
+            "example": "FISICA"
+          },
+          "uuid_legado": {
+            "description": "UUID legado da pessoa",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        }
+      },
+      "LembretesVencimento": {
+        "type": "object",
+        "properties": {
+          "ativo": {
+            "description": "Status do lembrete de vencimento",
+            "type": "boolean",
+            "example": true
+          },
+          "email": {
+            "description": "Email do lembrete de vencimento",
+            "type": "string",
+            "example": "lembrete@email.com"
+          },
+          "id": {
+            "description": "ID do lembrete de vencimento",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        }
+      },
+      "MensagensPagamentosAbertos": {
+        "type": "object",
+        "properties": {
+          "numero": {
+            "description": "Número de mensagens de pagamentos em aberto",
+            "type": "integer",
+            "example": 10
+          },
+          "total": {
+            "description": "Total de mensagens de pagamentos em aberto",
+            "type": "integer",
+            "example": 10
+          }
+        }
+      },
+      "OutrosContatos": {
+        "type": "object",
+        "properties": {
+          "cargo": {
+            "description": "Escritório do contato",
+            "type": "string",
+            "example": "Escritório Central"
+          },
+          "email": {
+            "description": "Email do contato",
+            "type": "string",
+            "example": "maria.silva@email.com"
+          },
+          "id": {
+            "description": "ID do contato",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "nome": {
+            "description": "Nome do contato",
+            "type": "string",
+            "example": "Maria Silva"
+          },
+          "telefone_celular": {
+            "description": "Celular do contato",
+            "type": "string",
+            "example": "11987654321"
+          },
+          "telefone_comercial": {
+            "description": "Telefone comercial do contato",
+            "type": "string",
+            "example": "1112345678"
+          }
+        }
+      },
+      "ParamAtualizarStatusPessoasEmLote": {
+        "description": "IDs das pessoas que serão inativadas/ativadas em lote",
+        "type": "object",
+        "required": [
+          "uuids"
+        ],
+        "properties": {
+          "uuids": {
+            "description": "máximo de 10 IDs",
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "4BBDAE00-2242-4703-9310-9946D6C2D0A3",
+              "B6270060-3AB7-4E66-A99B-71084E385F47"
+            ]
+          }
+        }
+      },
+      "ParamDeletarPessoasEmLote": {
+        "description": "IDs das pessoas que serão deletadas em lote",
+        "type": "object",
+        "required": [
+          "uuids"
+        ],
+        "properties": {
+          "uuids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "4BBDAE00-2242-4703-9310-9946D6C2D0A3",
+              "B6270060-3AB7-4E66-A99B-71084E385F47"
+            ]
+          }
+        }
+      },
+      "Perfil": {
+        "description": "Enum de perfil de pessoa",
+        "type": "string",
+        "enum": [
+          "Cliente",
+          "Fornecedor",
+          "Transportadora"
+        ],
+        "x-enum-varnames": [
+          "CLIENT",
+          "PROVIDER",
+          "TRANSPORTER"
+        ]
+      },
+      "PerfilPessoa": {
+        "description": "Modelo de perfil de pessoa",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "ID do perfil",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "tipo_perfil": {
+            "description": "Tipo de perfil: Cliente, Fornecedor ou Transportadora",
+            "type": "string",
+            "example": "Cliente"
+          }
+        }
+      },
+      "Pessoa": {
+        "type": "object",
+        "properties": {
+          "ativo": {
+            "description": "Ativo",
+            "type": "boolean",
+            "example": true
+          },
+          "atrasos_pagamentos": {
+            "description": "Atrasos nos pagamentos",
+            "type": "number",
+            "example": 750.25
+          },
+          "atrasos_recebimentos": {
+            "description": "Atrasos nos recebimentos",
+            "type": "number",
+            "example": 1500.5
+          },
+          "codigo": {
+            "description": "Código da pessoa",
+            "type": "string",
+            "example": "CLI001"
+          },
+          "criado_em": {
+            "description": "Data de criação da pessoa (ISO 8601, São Paulo/GMT-3)",
+            "type": "string",
+            "format": "date",
+            "example": "2024-01-15"
+          },
+          "data_alteracao": {
+            "description": "Data de alteração da pessoa (ISO 8601, São Paulo/GMT-3)",
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00"
+          },
+          "data_nascimento": {
+            "description": "Data de nascimento",
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "documento": {
+            "description": "Documento da pessoa",
+            "type": "string",
+            "example": "123.456.789-00"
+          },
+          "email": {
+            "description": "Emails da pessoa separados por vírgula",
+            "type": "string",
+            "example": "joao.silva@email.com, maria.silva@email.com"
+          },
+          "enderecos": {
+            "description": "Endereços da pessoa",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnderecoPessoa"
+            }
+          },
+          "id": {
+            "description": "ID da pessoa",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "inscricoes": {
+            "description": "Informações fiscais",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InformacoesFiscais"
+            }
+          },
+          "lembretes_vencimento": {
+            "description": "Lembretes de vencimento",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LembretesVencimento"
+            }
+          },
+          "mensagem_pagamentos_abertos": {
+            "description": "Mensagens de pagamentos em aberto",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MensagensPagamentosAbertos"
+              }
+            ]
+          },
+          "nome": {
+            "description": "Nome da pessoa",
+            "type": "string",
+            "example": "João Silva"
+          },
+          "nome_empresa": {
+            "description": "Nome da empresa",
+            "type": "string",
+            "example": "Empresa LTDA"
+          },
+          "observacao": {
+            "description": "Observações gerais da pessoa",
+            "type": "string",
+            "example": "Observação geral"
+          },
+          "optante_simples_nacional": {
+            "description": "Optante do Simples Nacional",
+            "type": "boolean",
+            "example": true
+          },
+          "orgao_publico": {
+            "description": "Órgão público",
+            "type": "boolean",
+            "example": true
+          },
+          "outros_contatos": {
+            "description": "Outros contatos",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutrosContatos"
+            }
+          },
+          "pagamentos_mes_atual": {
+            "description": "Pagamentos do mês atual",
+            "type": "number",
+            "example": 2500
+          },
+          "perfis": {
+            "description": "Perfis da pessoa",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TipoPerfil"
+            }
+          },
+          "pessoas_legado": {
+            "description": "Pessoas legadas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PessoaLegada"
+            }
+          },
+          "recebimentos_mes_atual": {
+            "description": "Recebimentos do mês atual",
+            "type": "number",
+            "example": 5000
+          },
+          "rg": {
+            "description": "RG",
+            "type": "string",
+            "example": "12.345.678-9"
+          },
+          "telefone_celular": {
+            "description": "Celular da pessoa",
+            "type": "string",
+            "example": "(11) 98765-4321"
+          },
+          "telefone_comercial": {
+            "description": "Telefone comercial da pessoa",
+            "type": "string",
+            "example": "(11) 1234-5678"
+          },
+          "tipo_pessoa": {
+            "description": "Tipo de pessoa",
+            "type": "string",
+            "example": "FISICA"
+          }
+        }
+      },
+      "PessoaLegada": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "ID da pessoa legada",
+            "type": "integer",
+            "example": 12345
+          },
+          "perfil": {
+            "description": "Perfil da pessoa legada",
+            "type": "string",
+            "example": "CLIENTE"
+          },
+          "uuid": {
+            "description": "UUID da pessoa legada",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        }
+      },
+      "ResumoAtualizacaoPessoa": {
+        "description": "Resumo de atualização de pessoa",
+        "type": "object",
+        "properties": {
+          "agencia_publica": {
+            "description": "Indica se a pessoa é uma agência pública",
+            "type": "boolean",
+            "example": false
+          },
+          "ativo": {
+            "description": "Indica se a pessoa está ativa",
+            "type": "boolean",
+            "example": true
+          },
+          "cnpj": {
+            "description": "CNPJ da pessoa jurídica",
+            "type": "string",
+            "example": "12.345.678/0001-90"
+          },
+          "codigo": {
+            "description": "Código da pessoa",
+            "type": "string",
+            "example": "CLI001"
+          },
+          "cpf": {
+            "description": "CPF da pessoa física",
+            "type": "string",
+            "example": "123.456.789-00"
+          },
+          "data_nascimento": {
+            "description": "Data de nascimento da pessoa física",
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "email": {
+            "description": "Emails da pessoa separados por vírgula",
+            "type": "string",
+            "example": "joao.silva@email.com, maria.silva@email.com"
+          },
+          "enderecos": {
+            "description": "Lista de endereços",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnderecoPessoa"
+            }
+          },
+          "estrangeiro": {
+            "description": "Indica se a pessoa é estrangeira",
+            "type": "boolean",
+            "example": false
+          },
+          "id": {
+            "description": "ID da pessoa",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "inscricoes": {
+            "description": "Lista de inscrições",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InscricaoPessoa"
+            }
+          },
+          "nome": {
+            "description": "Nome da pessoa",
+            "type": "string",
+            "example": "João Silva"
+          },
+          "nome_fantasia": {
+            "description": "Nome fantasia da pessoa jurídica",
+            "type": "string",
+            "example": "Empresa LTDA"
+          },
+          "observacao": {
+            "description": "Observações sobre a pessoa",
+            "type": "string",
+            "example": "Cliente preferencial"
+          },
+          "optante_simples": {
+            "description": "Indica se a pessoa é optante pelo Simples Nacional",
+            "type": "boolean",
+            "example": false
+          },
+          "origem": {
+            "description": "Origem da criação da pessoa",
+            "type": "string",
+            "example": "API"
+          },
+          "outros_contatos": {
+            "description": "Lista de outros contatos",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutrosContatos"
+            }
+          },
+          "perfis": {
+            "description": "Lista de perfis",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PerfilPessoa"
+            }
+          },
+          "rg": {
+            "description": "Registro Geral (RG) da pessoa",
+            "type": "string",
+            "example": "12.345.678-9"
+          },
+          "telefone_celular": {
+            "description": "Telefone celular",
+            "type": "string",
+            "example": "(11) 98765-4321"
+          },
+          "telefone_comercial": {
+            "description": "Telefone comercial da pessoa",
+            "type": "string",
+            "example": "(11) 1234-5678"
+          },
+          "tipo_pessoa": {
+            "description": "Tipo de pessoa: Física, Jurídica ou Estrangeira",
+            "type": "string",
+            "example": "FISICA"
+          }
+        }
+      },
+      "ResumoCriacaoPessoa": {
+        "description": "Resumo de criação de pessoa",
+        "type": "object",
+        "properties": {
+          "agencia_publica": {
+            "description": "Indica se a pessoa é uma agência pública",
+            "type": "boolean",
+            "example": false
+          },
+          "ativo": {
+            "description": "Indica se a pessoa está ativa",
+            "type": "boolean",
+            "example": true
+          },
+          "cnpj": {
+            "description": "CNPJ da pessoa jurídica",
+            "type": "string",
+            "example": "12.345.678/0001-90"
+          },
+          "codigo": {
+            "description": "Código da pessoa",
+            "type": "string",
+            "example": "CLI001"
+          },
+          "contato_cobranca_faturamento": {
+            "description": "Contato para cobrança e faturamento",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContatoCobrancaFaturamento"
+              }
+            ]
+          },
+          "cpf": {
+            "description": "CPF da pessoa física",
+            "type": "string",
+            "example": "123.456.789-00"
+          },
+          "data_nascimento": {
+            "description": "Data de nascimento da pessoa física",
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "email": {
+            "description": "Emails da pessoa separados por vírgula",
+            "type": "string",
+            "example": "joao.silva@email.com, maria.silva@email.com "
+          },
+          "enderecos": {
+            "description": "Lista de endereços",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnderecoPessoa"
+            }
+          },
+          "estrangeiro": {
+            "description": "Indica se a pessoa é estrangeira",
+            "type": "boolean",
+            "example": false
+          },
+          "id": {
+            "description": "ID da pessoa",
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "inscricoes": {
+            "description": "Lista de inscrições",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InscricaoPessoa"
+            }
+          },
+          "nome": {
+            "description": "Nome da pessoa",
+            "type": "string",
+            "example": "João Silva"
+          },
+          "nome_fantasia": {
+            "description": "Nome fantasia da pessoa jurídica",
+            "type": "string",
+            "example": "Empresa LTDA"
+          },
+          "observacao": {
+            "description": "Observações sobre a pessoa",
+            "type": "string",
+            "example": "Cliente preferencial"
+          },
+          "optante_simples": {
+            "description": "Indica se a pessoa é optante pelo Simples Nacional",
+            "type": "boolean",
+            "example": false
+          },
+          "origem": {
+            "description": "Origem da criação da pessoa",
+            "type": "string",
+            "example": "API"
+          },
+          "outros_contatos": {
+            "description": "Lista de outros contatos",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutrosContatos"
+            }
+          },
+          "perfis": {
+            "description": "Lista de perfis",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PerfilPessoa"
+            }
+          },
+          "rg": {
+            "description": "Registro Geral (RG) da pessoa",
+            "type": "string",
+            "example": "12.345.678-9"
+          },
+          "telefone_celular": {
+            "description": "Telefone celular",
+            "type": "string",
+            "example": "11987654321"
+          },
+          "telefone_comercial": {
+            "description": "Telefone comercial da pessoa",
+            "type": "string",
+            "example": "1112345678"
+          },
+          "tipo_pessoa": {
+            "description": "Tipo de pessoa: Física, Jurídica ou Estrangeira",
+            "type": "string",
+            "example": "FISICA"
+          }
+        }
+      },
+      "ResumoDePessoasPorFiltro": {
+        "description": "Resumo de pessoas por filtro",
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Lista de itens do resumo de pessoas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemResumoDePessoasPorFiltro"
+            }
+          },
+          "totalItems": {
+            "description": "Total de itens encontrados",
+            "type": "integer",
+            "example": 150
+          }
+        }
+      },
+      "TipoPerfil": {
+        "type": "object",
+        "properties": {
+          "tipo_perfil": {
+            "description": "Tipo de perfil: Cliente, Fornecedor ou Transportadora",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Perfil"
+              }
+            ],
+            "example": "Cliente"
+          }
+        }
+      },
+      "TipoPessoa": {
+        "description": "Enum de tipo de pessoa",
+        "type": "string",
+        "enum": [
+          "Física",
+          "Jurídica",
+          "Estrangeira"
+        ],
+        "x-enum-varnames": [
+          "NATURAL",
+          "LEGAL",
+          "FOREIGN_FILTER"
+        ]
+      }
+    }
+  }
+}

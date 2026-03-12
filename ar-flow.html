@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conta Azul API - Accounts Receivable Flow Coverage</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1923;
+    color: #e0e6ed;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  header { text-align: center; padding: 32px 20px 16px; }
+  header h1 {
+    font-size: 28px; font-weight: 700;
+    background: linear-gradient(135deg, #4fc3f7, #29b6f6, #0288d1);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  header p { color: #7a8fa6; font-size: 14px; }
+  .legend { display: flex; justify-content: center; gap: 24px; padding: 12px 0 24px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #9ab; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .legend-dot.full { background: #4caf50; box-shadow: 0 0 8px #4caf5066; }
+  .legend-dot.partial { background: #ff9800; box-shadow: 0 0 8px #ff980066; }
+  .legend-dot.gap { background: #f44336; box-shadow: 0 0 8px #f4433666; }
+  .flow-container { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; }
+  svg { width: 100%; height: auto; display: block; }
+  #tooltip {
+    position: fixed; background: #1a2735; border: 1px solid #2a3f55; border-radius: 10px;
+    padding: 16px; max-width: 400px; font-size: 13px; line-height: 1.6;
+    pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  #tooltip.show { opacity: 1; }
+  #tooltip h3 { font-size: 15px; margin-bottom: 6px; color: #e0e6ed; }
+  .tip-status { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+  .tip-status.full { color: #4caf50; }
+  .tip-status.partial { color: #ff9800; }
+  .tip-status.gap { color: #f44336; }
+  .tip-endpoints { margin-top: 8px; padding-top: 8px; border-top: 1px solid #2a3f55; }
+  .tip-endpoints code { display: block; font-family: 'SF Mono', Consolas, monospace; font-size: 11px; color: #4fc3f7; padding: 2px 0; }
+  .tip-api { margin-top: 6px; color: #7a8fa6; font-size: 11px; }
+  .tip-gap-note { color: #f44336; font-style: italic; margin-top: 6px; }
+  .tip-note { color: #ff9800; font-style: italic; margin-top: 6px; }
+  .summary { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+  .summary h2 { font-size: 20px; margin-bottom: 16px; color: #b0c4d8; }
+  .summary table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .summary th { text-align: left; padding: 10px 12px; background: #1a2735; color: #7a8fa6; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; }
+  .summary td { padding: 10px 12px; border-bottom: 1px solid #1a2735; vertical-align: top; }
+  .summary td code { font-family: 'SF Mono', Consolas, monospace; font-size: 11px; color: #4fc3f7; background: #12222e; padding: 2px 6px; border-radius: 3px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge.full { background: #4caf5022; color: #4caf50; border: 1px solid #4caf5044; }
+  .badge.partial { background: #ff980022; color: #ff9800; border: 1px solid #ff980044; }
+  .badge.gap { background: #f4433622; color: #f44336; border: 1px solid #f4433644; }
+  .compare { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+  .compare h2 { font-size: 20px; margin-bottom: 16px; color: #b0c4d8; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare-card { background: #152230; border-radius: 12px; padding: 20px; border: 1px solid #2a3f55; }
+  .compare-card h3 { font-size: 16px; margin-bottom: 12px; }
+  .compare-card .score { font-size: 36px; font-weight: 700; margin-bottom: 4px; }
+  .compare-card .label { color: #7a8fa6; font-size: 12px; }
+  .bar { height: 8px; border-radius: 4px; background: #1a2735; margin-top: 12px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+
+  /* Navigation */
+  nav {
+    background: #152230; border-bottom: 1px solid #2a3f55; padding: 10px 20px;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 200;
+  }
+  nav a {
+    color: #7a8fa6; text-decoration: none; font-size: 13px; padding: 6px 14px;
+    border-radius: 8px; transition: background 0.2s, color 0.2s; white-space: nowrap;
+  }
+  nav a:hover { background: #1a2735; color: #e0e6ed; }
+  nav a.active { background: #4caf5022; color: #4caf50; font-weight: 600; }
+  nav .nav-brand { color: #4fc3f7; font-weight: 700; font-size: 14px; margin-right: 10px; }
+
+  /* Key Insights Banner */
+  .insights-banner {
+    max-width: 1100px; margin: 0 auto 8px; padding: 0 20px;
+  }
+  .insights-grid {
+    display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 16px; align-items: stretch;
+  }
+  .insight-score-card {
+    background: linear-gradient(135deg, #132a1a, #1a2230);
+    border: 1px solid #4caf5044; border-radius: 12px;
+    padding: 20px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-width: 120px;
+  }
+  .insight-score-card .is-pct { font-size: 42px; font-weight: 800; color: #4caf50; }
+  .insight-score-card .is-label { font-size: 11px; color: #7a8fa6; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+  .insight-item {
+    background: #152230; border-radius: 10px; padding: 16px 18px; border: 1px solid #2a3f55;
+  }
+  .insight-item .ii-icon { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .insight-item .ii-text { font-size: 13px; color: #b0c4d8; line-height: 1.5; }
+  .insight-item .ii-text strong { color: #e0e6ed; }
+
+  @media (max-width: 800px) {
+    .insights-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 500px) {
+    .insights-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">Conta Azul</span>
+  <a href="flows.html">Overview</a>
+  <a href="ap-flow.html">AP Flow</a>
+  <a href="ar-flow.html" class="active">AR Flow</a>
+  <a href="reconciliation-deep-dive.html">Reconciliation</a>
+  <a href="business-insights.html">Business Insights</a>
+</nav>
+
+<header>
+  <h1>Conta Azul API &mdash; Accounts Receivable Flow</h1>
+  <p>End-to-end customer invoice &amp; collection coverage assessment across 6 API specifications</p>
+</header>
+
+<div class="insights-banner">
+  <div class="insights-grid">
+    <div class="insight-score-card">
+      <div class="is-pct">~85%</div>
+      <div class="is-label">Coverage</div>
+    </div>
+    <div class="insight-item" style="border-left: 3px solid #4caf50;">
+      <div class="ii-icon" style="color:#4caf50;">Strengths</div>
+      <div class="ii-text"><strong>7 of 8 steps fully covered</strong> &mdash; customer onboarding, service items, AR recording with installments, collection via write-offs ("baixas"), digital receipts, and financial reporting all have complete API support.</div>
+    </div>
+    <div class="insight-item" style="border-left: 3px solid #ff9800;">
+      <div class="ii-icon" style="color:#ff9800;">Indirect Path</div>
+      <div class="ii-text"><strong>Invoice issuance has no direct endpoint</strong> &mdash; invoices (NF-e / NFS-e) are issued indirectly by creating a sale (<code>POST /v1/sales</code>) which triggers the fiscal document.</div>
+    </div>
+    <div class="insight-item" style="border-left: 3px solid #ff9800;">
+      <div class="ii-icon" style="color:#ff9800;">Read-Only Gaps</div>
+      <div class="ii-text"><strong>Collection is rich but read-only</strong> &mdash; 22+ payment methods and digital receipts are tracked, but write-offs ("baixas") can only be queried, not created via the API.</div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot full"></div> Full API Coverage</div>
+  <div class="legend-item"><div class="legend-dot partial"></div> Partial Coverage</div>
+  <div class="legend-item"><div class="legend-dot gap"></div> Not Available</div>
+</div>
+
+<div class="flow-container">
+<svg viewBox="0 0 1060 520" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow-green" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/><feFlood flood-color="#4caf50" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-orange" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/><feFlood flood-color="#ff9800" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-red" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/><feFlood flood-color="#f44336" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#3a5068"/>
+    </marker>
+    <radialGradient id="pulse-grad"><stop offset="0%" stop-color="#4fc3f7" stop-opacity="1"/><stop offset="100%" stop-color="#4fc3f7" stop-opacity="0"/></radialGradient>
+  </defs>
+
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2735" stroke-width="0.5"/>
+  </pattern>
+  <rect width="1060" height="520" fill="url(#grid)" opacity="0.5"/>
+
+  <!-- Connections Row 1 -->
+  <line x1="195" y1="80" x2="295" y2="80" stroke="#3a5068" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="475" y1="80" x2="575" y2="80" stroke="#3a5068" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="755" y1="80" x2="855" y2="80" stroke="#3a5068" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Row 1 to Row 2 -->
+  <path d="M 960 110 Q 960 180 960 180 Q 960 210 930 210 L 775 210" stroke="#3a5068" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Row 2 connections -->
+  <line x1="595" y1="240" x2="495" y2="240" stroke="#3a5068" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="315" y1="240" x2="215" y2="240" stroke="#3a5068" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Row 2 to Row 3 -->
+  <path d="M 100 270 Q 100 340 100 340 Q 100 370 130 370 L 275 370" stroke="#3a5068" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Row 3 connections -->
+  <line x1="475" y1="400" x2="575" y2="400" stroke="#3a5068" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="755" y1="400" x2="855" y2="400" stroke="#3a5068" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Animated pulse -->
+  <circle r="5" fill="#4fc3f7" opacity="0">
+    <animateMotion dur="12s" repeatCount="indefinite" path="M 100 80 L 300 80 L 530 80 L 810 80 Q 960 80 960 210 L 690 240 L 410 240 L 100 240 Q 100 240 100 370 L 380 400 L 660 400 L 960 400"/>
+    <animate attributeName="opacity" values="0;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0" dur="12s" repeatCount="indefinite"/>
+  </circle>
+  <circle r="12" fill="url(#pulse-grad)" opacity="0">
+    <animateMotion dur="12s" repeatCount="indefinite" path="M 100 80 L 300 80 L 530 80 L 810 80 Q 960 80 960 210 L 690 240 L 410 240 L 100 240 Q 100 240 100 370 L 380 400 L 660 400 L 960 400"/>
+    <animate attributeName="opacity" values="0;0.4;0.4;0.4;0.4;0.4;0.4;0.4;0.4;0.4;0.4;0" dur="12s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- ROW 1 -->
+  <!-- Step 1: Customer Onboarding - FULL -->
+  <g class="step" data-step="customer-onboarding" filter="url(#glow-green)">
+    <rect x="10" y="40" width="180" height="80" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+    <text x="100" y="68" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="700" letter-spacing="1">STEP 1</text>
+    <text x="100" y="90" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Customer</text>
+    <text x="100" y="106" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Onboarding</text>
+    <circle cx="170" cy="52" r="6" fill="#4caf50" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- Step 2: Quote / Sales Order - FULL -->
+  <g class="step" data-step="sales-order" filter="url(#glow-green)">
+    <rect x="300" y="40" width="180" height="80" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+    <text x="390" y="68" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="700" letter-spacing="1">STEP 2</text>
+    <text x="390" y="90" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Quote / Sales</text>
+    <text x="390" y="106" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Order</text>
+    <circle cx="460" cy="52" r="6" fill="#4caf50" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" begin="0.3s"/></circle>
+  </g>
+
+  <!-- Step 3: Invoice Issuance - PARTIAL -->
+  <g class="step" data-step="invoice-issuance" filter="url(#glow-orange)">
+    <rect x="580" y="40" width="180" height="80" rx="12" fill="#1f1d15" stroke="#ff9800" stroke-width="2"/>
+    <text x="670" y="68" text-anchor="middle" fill="#ff9800" font-size="11" font-weight="700" letter-spacing="1">STEP 3</text>
+    <text x="670" y="90" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Invoice Issuance</text>
+    <text x="670" y="106" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">(NFe / NFS-e)</text>
+    <circle cx="740" cy="52" r="6" fill="#ff9800" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" begin="0.6s"/></circle>
+  </g>
+
+  <!-- Step 4: Invoice Delivery - FULL -->
+  <g class="step" data-step="invoice-delivery" filter="url(#glow-green)">
+    <rect x="860" y="40" width="180" height="80" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+    <text x="950" y="68" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="700" letter-spacing="1">STEP 4</text>
+    <text x="950" y="90" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Invoice Delivery</text>
+    <text x="950" y="106" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">(PDF / XML)</text>
+    <circle cx="1020" cy="52" r="6" fill="#4caf50" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" begin="0.9s"/></circle>
+  </g>
+
+  <!-- ROW 2 (right to left) -->
+  <!-- Step 5: AR Recording - FULL -->
+  <g class="step" data-step="ar-recording" filter="url(#glow-green)">
+    <rect x="600" y="200" width="180" height="80" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+    <text x="690" y="228" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="700" letter-spacing="1">STEP 5</text>
+    <text x="690" y="250" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">AR Recording</text>
+    <text x="690" y="266" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">(Contas a Receber)</text>
+    <circle cx="760" cy="212" r="6" fill="#4caf50" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" begin="1.2s"/></circle>
+  </g>
+
+  <!-- Step 6: Billing / Collection - PARTIAL -->
+  <g class="step" data-step="billing-collection" filter="url(#glow-orange)">
+    <rect x="320" y="200" width="180" height="80" rx="12" fill="#1f1d15" stroke="#ff9800" stroke-width="2"/>
+    <text x="410" y="228" text-anchor="middle" fill="#ff9800" font-size="11" font-weight="700" letter-spacing="1">STEP 6</text>
+    <text x="410" y="250" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Billing &amp;</text>
+    <text x="410" y="266" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Collection</text>
+    <circle cx="480" cy="212" r="6" fill="#ff9800" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" begin="1.5s"/></circle>
+  </g>
+
+  <!-- Step 7: Cash Receipt - FULL -->
+  <g class="step" data-step="cash-receipt" filter="url(#glow-green)">
+    <rect x="20" y="200" width="180" height="80" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+    <text x="110" y="228" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="700" letter-spacing="1">STEP 7</text>
+    <text x="110" y="250" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Cash Receipt</text>
+    <text x="110" y="266" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">(Baixas)</text>
+    <circle cx="180" cy="212" r="6" fill="#4caf50" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" begin="1.8s"/></circle>
+  </g>
+
+  <!-- ROW 3 -->
+  <!-- Step 8: Reconciliation - PARTIAL -->
+  <g class="step" data-step="reconciliation" filter="url(#glow-orange)">
+    <rect x="280" y="360" width="180" height="80" rx="12" fill="#1f1d15" stroke="#ff9800" stroke-width="2"/>
+    <text x="370" y="388" text-anchor="middle" fill="#ff9800" font-size="11" font-weight="700" letter-spacing="1">STEP 8</text>
+    <text x="370" y="410" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Bank</text>
+    <text x="370" y="426" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Reconciliation</text>
+    <circle cx="440" cy="372" r="6" fill="#ff9800" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" begin="2.1s"/></circle>
+  </g>
+
+  <!-- Step 9: Recurring Billing - FULL -->
+  <g class="step" data-step="recurring-billing" filter="url(#glow-green)">
+    <rect x="580" y="360" width="180" height="80" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+    <text x="670" y="388" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="700" letter-spacing="1">STEP 9</text>
+    <text x="670" y="410" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Recurring</text>
+    <text x="670" y="426" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Billing</text>
+    <circle cx="740" cy="372" r="6" fill="#4caf50" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" begin="2.4s"/></circle>
+  </g>
+
+  <!-- Step 10: Reporting - FULL -->
+  <g class="step" data-step="reporting" filter="url(#glow-green)">
+    <rect x="860" y="360" width="180" height="80" rx="12" fill="#152230" stroke="#4caf50" stroke-width="2"/>
+    <text x="950" y="388" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="700" letter-spacing="1">STEP 10</text>
+    <text x="950" y="410" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Financial</text>
+    <text x="950" y="426" text-anchor="middle" fill="#e0e6ed" font-size="13" font-weight="600">Reporting</text>
+    <circle cx="1020" cy="372" r="6" fill="#4caf50" opacity="0.8"><animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" begin="2.7s"/></circle>
+  </g>
+
+  <!-- Score -->
+  <g transform="translate(20, 490)">
+    <text x="0" y="0" fill="#7a8fa6" font-size="13">Coverage:
+      <tspan fill="#4caf50" font-weight="700">7 Full</tspan> /
+      <tspan fill="#ff9800" font-weight="700">3 Partial</tspan> /
+      <tspan fill="#f44336" font-weight="700">0 Gaps</tspan>
+      &mdash; <tspan fill="#e0e6ed" font-weight="600">~85% of end-to-end AR flow supported</tspan>
+    </text>
+  </g>
+</svg>
+</div>
+
+<div class="compare">
+  <h2>AR vs AP Coverage Comparison</h2>
+  <div class="compare-grid">
+    <div class="compare-card">
+      <h3 style="color:#4fc3f7">Accounts Receivable</h3>
+      <div class="score" style="color:#4caf50">85%</div>
+      <div class="label">7 Full / 3 Partial / 0 Gaps</div>
+      <div class="bar"><div class="bar-fill" style="width:85%;background:linear-gradient(90deg,#4caf50,#66bb6a)"></div></div>
+    </div>
+    <div class="compare-card">
+      <h3 style="color:#4fc3f7">Accounts Payable</h3>
+      <div class="score" style="color:#ff9800">40%</div>
+      <div class="label">3 Full / 3 Partial / 4 Gaps</div>
+      <div class="bar"><div class="bar-fill" style="width:40%;background:linear-gradient(90deg,#f44336,#ff9800)"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="summary">
+  <h2>Detailed AR Coverage Breakdown</h2>
+  <table>
+    <thead><tr><th>Step</th><th>Coverage</th><th>API Spec</th><th>Key Endpoints</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1. Customer Onboarding</td>
+        <td><span class="badge full">Full</span></td>
+        <td>Person API</td>
+        <td><code>POST /v1/pessoas</code> <code>PATCH /v1/pessoas/{id}</code></td>
+        <td>Full CRUD for customers with billing contact field (<code>contato_cobranca_faturamento</code>). Batch activate/deactivate.</td>
+      </tr>
+      <tr>
+        <td>2. Quote / Sales Order</td>
+        <td><span class="badge full">Full</span></td>
+        <td>Sales API</td>
+        <td><code>POST /v1/venda</code> <code>PUT /v1/venda/{id}</code> <code>GET /v1/venda/busca</code></td>
+        <td>Full draft-to-approved flow: <code>EM_ANDAMENTO</code> (draft) &rarr; <code>APROVADO</code> &rarr; <code>FATURADO</code>. Line items with products/services, payment conditions, installments.</td>
+      </tr>
+      <tr>
+        <td>3. Invoice Issuance</td>
+        <td><span class="badge partial">Partial</span></td>
+        <td>Sales + Invoice API</td>
+        <td><code>PUT /v1/venda/{id}</code> (set FATURADO) <code>GET /v1/notas-fiscais</code></td>
+        <td>No direct invoice creation API. Setting sale to <code>FATURADO</code> triggers NFe/NFS-e in ERP. Invoice API is <em>read-only</em> but shows pre-issuance states (PENDENTE, PRONTA_ENVIO). NFS-e has 14 lifecycle statuses.</td>
+      </tr>
+      <tr>
+        <td>4. Invoice Delivery</td>
+        <td><span class="badge full">Full</span></td>
+        <td>Sales + Invoice API</td>
+        <td><code>GET /v1/venda/{id}/imprimir</code> <code>GET /v1/notas-fiscais/{chave}</code></td>
+        <td>PDF generation from sales. XML retrieval by access key for issued invoices. Both product (NFe) and service (NFS-e) queryable.</td>
+      </tr>
+      <tr>
+        <td>5. AR Recording</td>
+        <td><span class="badge full">Full</span></td>
+        <td>Financial API</td>
+        <td><code>POST .../contas-a-receber</code> <code>GET .../contas-a-receber/buscar</code> <code>PATCH .../parcelas/{id}</code></td>
+        <td>Full CRUD for receivables. Async creation (HTTP 202). Installments with 7 statuses (PENDENTE, QUITADO, ATRASADO, RECEBIDO_PARCIAL, etc.).</td>
+      </tr>
+      <tr>
+        <td>6. Billing &amp; Collection</td>
+        <td><span class="badge partial">Partial</span></td>
+        <td>Financial API</td>
+        <td>SolicitacaoCobranca schema in Parcela</td>
+        <td>Rich collection system: BOLETO, LINK_PAGAMENTO, PIX_COBRANCA, BOLETO_REGISTRADO. Payment URLs generated. 12+ collection statuses. But no dedicated creation endpoint &mdash; collection requests appear as nested data in parcela responses.</td>
+      </tr>
+      <tr>
+        <td>7. Cash Receipt</td>
+        <td><span class="badge full">Full</span></td>
+        <td>Financial API</td>
+        <td><code>PATCH .../parcelas/{id}</code></td>
+        <td>Payments via write-offs ("baixas") with 22+ payment methods (PIX, boleto, card, transfer, etc.). Partial payments supported. Digital receipts tracked (<code>id_recibo_digital</code>).</td>
+      </tr>
+      <tr>
+        <td>8. Bank Reconciliation</td>
+        <td><span class="badge partial">Partial</span></td>
+        <td>Financial API</td>
+        <td><code>GET /v1/financeiro/transferencias</code></td>
+        <td><code>id_reconciliacao</code> in Baixa records. <code>conciliado</code> flag on Parcela. No dedicated reconciliation workflow endpoint.</td>
+      </tr>
+      <tr>
+        <td>9. Recurring Billing</td>
+        <td><span class="badge full">Full</span></td>
+        <td>Contracts API</td>
+        <td><code>POST /v1/contratos</code> <code>GET /v1/contratos</code></td>
+        <td>Create recurring contracts with Monthly/Annual (MENSAL/ANUAL) frequency. Auto-generates sales per schedule. Returns <code>id_venda</code> for initial sale. Payment due day configurable.</td>
+      </tr>
+      <tr>
+        <td>10. Financial Reporting</td>
+        <td><span class="badge full">Full</span></td>
+        <td>Financial API</td>
+        <td><code>GET /v1/categorias</code> <code>GET /v1/centro-de-custo</code> <code>GET /v1/financeiro/categorias-dre</code></td>
+        <td>123 financial categories, cost centers, P&amp;L (DRE) mapping. AR search supports aging by due date, customer, status, amount range.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="summary">
+  <h2>Invoice Attachment &amp; Document Capabilities</h2>
+  <table>
+    <thead><tr><th>Feature</th><th>Status</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Invoice PDF Generation</td>
+        <td><span class="badge full">Available</span></td>
+        <td><code>GET /v1/venda/{id}/imprimir</code> returns binary PDF</td>
+      </tr>
+      <tr>
+        <td>Invoice XML Retrieval</td>
+        <td><span class="badge full">Available</span></td>
+        <td><code>GET /v1/notas-fiscais/{chave}</code> returns XML by access key</td>
+      </tr>
+      <tr>
+        <td>AnexoParcela (Installment Attachments)</td>
+        <td><span class="badge partial">Read-only</span></td>
+        <td>Types: FATURA, BOLETO_BANCARIO, RECIBO, RECIBO_DIGITAL, OUTROS. Supports FILE and URL content. No upload endpoint.</td>
+      </tr>
+      <tr>
+        <td>AnexoBaixa (Payment Attachments)</td>
+        <td><span class="badge partial">Read-only</span></td>
+        <td>Types: RECIBO_DIGITAL, RECIBO. System-generated when payment recorded.</td>
+      </tr>
+      <tr>
+        <td>SolicitacaoCobranca (Collection Docs)</td>
+        <td><span class="badge partial">Read-only</span></td>
+        <td>System generates boleto PDFs, payment links, PIX QR codes. URL returned in response. No manual creation endpoint.</td>
+      </tr>
+      <tr>
+        <td>Direct Invoice Creation (NFe/NFS-e)</td>
+        <td><span class="badge gap">Not Available</span></td>
+        <td>Invoice API explicitly states read-only. Creation triggered indirectly via sale status <code>FATURADO</code>.</td>
+      </tr>
+      <tr>
+        <td>Draft Invoice States</td>
+        <td><span class="badge partial">Visible, not writable</span></td>
+        <td>NFS-e statuses include PENDENTE and PRONTA_ENVIO (pre-issuance). These are queryable but not settable via API.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+var stepData = {
+  'customer-onboarding': {
+    title: 'Customer Onboarding',
+    status: 'full',
+    statusText: 'Full Coverage',
+    desc: 'Full CRUD for customers (Cliente profile). Includes billing-specific contact field (contato_cobranca_faturamento), CNPJ/CPF, addresses, batch operations.',
+    endpoints: ['POST /v1/pessoas', 'GET /v1/pessoas', 'PATCH /v1/pessoas/{id}', 'POST /v1/pessoas/ativar'],
+    api: 'Person API (open-api-person.json)'
+  },
+  'sales-order': {
+    title: 'Quote / Sales Order',
+    status: 'full',
+    statusText: 'Full Coverage',
+    desc: 'Complete sales lifecycle: EM_ANDAMENTO (draft) \u2192 APROVADO \u2192 FATURADO. Line items with products/services, payment conditions with installment schedules, PDF generation.',
+    endpoints: ['POST /v1/venda', 'PUT /v1/venda/{id}', 'GET /v1/venda/busca', 'GET /v1/venda/{id}/itens', 'GET /v1/venda/proximo-numero'],
+    api: 'Sales API (sales-apis-openapi.json)'
+  },
+  'invoice-issuance': {
+    title: 'Invoice Issuance (NFe / NFS-e)',
+    status: 'partial',
+    statusText: 'Partial Coverage',
+    desc: 'No direct invoice creation endpoint. Setting sale status to FATURADO triggers NFe/NFS-e generation in the ERP. Invoice API is read-only but exposes pre-issuance states (PENDENTE, PRONTA_ENVIO) for NFS-e with 14 lifecycle statuses.',
+    endpoints: ['PUT /v1/venda/{id} (set FATURADO)', 'GET /v1/notas-fiscais', 'GET /v1/notas-fiscais-servico'],
+    api: 'Sales + Invoice APIs',
+    note: 'Pending type AGUARDANDO_GERACAO_NOTA_FISCAL on sales confirms ERP generates invoices from approved sales.'
+  },
+  'invoice-delivery': {
+    title: 'Invoice Delivery (PDF / XML)',
+    status: 'full',
+    statusText: 'Full Coverage',
+    desc: 'PDF generation from sales. XML retrieval by invoice access key. Both NFe (product) and NFS-e (service) invoices queryable with filters.',
+    endpoints: ['GET /v1/venda/{id}/imprimir (PDF)', 'GET /v1/notas-fiscais/{chave} (XML)'],
+    api: 'Sales + Invoice APIs'
+  },
+  'ar-recording': {
+    title: 'AR Recording (Contas a Receber)',
+    status: 'full',
+    statusText: 'Full Coverage',
+    desc: 'Create receivable events (async, HTTP 202). Query with rich filters (due date, customer, status, amount). Update installments. 7 statuses: PENDENTE, QUITADO, CANCELADO, RENEGOCIADO, RECEBIDO_PARCIAL, ATRASADO, PERDIDO.',
+    endpoints: ['POST /v1/financeiro/.../contas-a-receber', 'GET .../contas-a-receber/buscar', 'GET .../parcelas/{id}', 'PATCH .../parcelas/{id}'],
+    api: 'Financial API (financial-apis-openapi.json)'
+  },
+  'billing-collection': {
+    title: 'Billing & Collection',
+    status: 'partial',
+    statusText: 'Partial Coverage',
+    desc: 'Rich SolicitacaoCobranca schema: BOLETO, LINK_PAGAMENTO, PIX_COBRANCA, BOLETO_REGISTRADO. 12+ statuses. System generates payment URLs. But collection requests are nested in parcela responses with no dedicated create endpoint.',
+    endpoints: ['(Embedded in Parcela.solicitacoes_cobrancas)'],
+    api: 'Financial API',
+    note: 'Collection types and payment link generation exist but are managed through the ERP, not via direct API creation.'
+  },
+  'cash-receipt': {
+    title: 'Cash Receipt (Baixas)',
+    status: 'full',
+    statusText: 'Full Coverage',
+    desc: 'Record payments via write-offs (baixas) on installments. 22+ payment methods (PIX, boleto, card, transfer, etc.). Partial payments supported. Digital receipt tracking. Origins include VENDA, ANTECIPACAO.',
+    endpoints: ['PATCH .../parcelas/{id}'],
+    api: 'Financial API'
+  },
+  'reconciliation': {
+    title: 'Bank Reconciliation',
+    status: 'partial',
+    statusText: 'Partial Coverage',
+    desc: 'id_reconciliacao in Baixa records links to bank statements. conciliado boolean flag on Parcela. Transfers queryable. No dedicated reconciliation workflow.',
+    endpoints: ['GET /v1/financeiro/transferencias'],
+    api: 'Financial API'
+  },
+  'recurring-billing': {
+    title: 'Recurring Billing',
+    status: 'full',
+    statusText: 'Full Coverage',
+    desc: 'Create contracts with Monthly/Annual (MENSAL/ANUAL) frequency. Auto-generates sales per schedule. Configurable due day, expiration type (DATE or NEVER). Returns id_venda linking to initial sale.',
+    endpoints: ['POST /v1/contratos', 'GET /v1/contratos', 'GET /v1/contratos/proximo-numero'],
+    api: 'Contracts API (contracts-apis-openapi.json)'
+  },
+  'reporting': {
+    title: 'Financial Reporting',
+    status: 'full',
+    statusText: 'Full Coverage',
+    desc: 'Full category hierarchy (123 categories), cost centers, P&L (DRE) mapping. AR search supports aging reports by due date, customer, status, amount range.',
+    endpoints: ['GET /v1/categorias', 'GET /v1/centro-de-custo', 'GET /v1/financeiro/categorias-dre'],
+    api: 'Financial API'
+  }
+};
+
+var tooltip = document.getElementById('tooltip');
+
+function showTooltip(key, x, y) {
+  var data = stepData[key];
+  if (!data) return;
+  while (tooltip.firstChild) tooltip.removeChild(tooltip.firstChild);
+
+  var h3 = document.createElement('h3');
+  h3.textContent = data.title;
+  tooltip.appendChild(h3);
+
+  var statusDiv = document.createElement('div');
+  statusDiv.className = 'tip-status ' + data.status;
+  statusDiv.textContent = data.statusText;
+  tooltip.appendChild(statusDiv);
+
+  var descDiv = document.createElement('div');
+  descDiv.textContent = data.desc;
+  tooltip.appendChild(descDiv);
+
+  if (data.api) {
+    var apiDiv = document.createElement('div');
+    apiDiv.className = 'tip-api';
+    apiDiv.textContent = 'Source: ' + data.api;
+    tooltip.appendChild(apiDiv);
+  }
+
+  if (data.endpoints && data.endpoints.length > 0) {
+    var epDiv = document.createElement('div');
+    epDiv.className = 'tip-endpoints';
+    data.endpoints.forEach(function(ep) {
+      var code = document.createElement('code');
+      code.textContent = ep;
+      epDiv.appendChild(code);
+    });
+    tooltip.appendChild(epDiv);
+  }
+
+  if (data.gapNote) {
+    var gapDiv = document.createElement('div');
+    gapDiv.className = 'tip-gap-note';
+    gapDiv.textContent = data.gapNote;
+    tooltip.appendChild(gapDiv);
+  }
+
+  if (data.note) {
+    var noteDiv = document.createElement('div');
+    noteDiv.className = 'tip-note';
+    noteDiv.textContent = data.note;
+    tooltip.appendChild(noteDiv);
+  }
+
+  var posX = Math.min(x + 16, window.innerWidth - 420);
+  var posY = Math.min(y + 16, window.innerHeight - 300);
+  tooltip.style.left = posX + 'px';
+  tooltip.style.top = posY + 'px';
+  tooltip.classList.add('show');
+}
+
+document.querySelectorAll('.step').forEach(function(el) {
+  el.style.cursor = 'pointer';
+  el.addEventListener('mouseenter', function(e) { showTooltip(el.dataset.step, e.clientX, e.clientY); });
+  el.addEventListener('mousemove', function(e) {
+    var posX = Math.min(e.clientX + 16, window.innerWidth - 420);
+    var posY = Math.min(e.clientY + 16, window.innerHeight - 300);
+    tooltip.style.left = posX + 'px';
+    tooltip.style.top = posY + 'px';
+  });
+  el.addEventListener('mouseleave', function() { tooltip.classList.remove('show'); });
+});
+</script>
+</body>
+</html>

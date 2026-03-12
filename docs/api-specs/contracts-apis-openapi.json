@@ -1,0 +1,585 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Contratos",
+    "version": "v1",
+    "description": "A API de Contratos tem como objetivo automatizar a gestão de vendas recorrentes, sejam elas de produtos ou serviços. Por meio dessa funcionalidade, é possível criar contratos que geram automaticamente as vendas conforme a periodicidade configurada, garantindo maior eficiência operacional e redução de processos manuais. Esta API oferece endpoints que permitem criar, consultar o próximo número de contratos e consultar, possibilitando a integração direta com sistemas externos para controle e acompanhamento das recorrências.\n\nSe desejar aprofundar o entendimento das regras de negócio aplicadas pelo ERP, recomendamos, de forma opcional a consulta à nossa Central de Ajuda:\n\n**Controle de contratos recorrentes:**  \n[https://ajuda.contaazul.com/hc/pt-br/sections/19712815184781-Controle-de-contratos-recorrentes](https://ajuda.contaazul.com/hc/pt-br/sections/19712815184781-Controle-de-contratos-recorrentes)\n"
+  },
+  "servers": [
+    {
+      "url": "https://api-v2.contaazul.com",
+      "description": "Servidor de produção"
+    }
+  ],
+  "tags": [
+    {
+      "name": "v1",
+      "description": "Conjunto de recursos para acompanhar e administrar operações  relacionadas a contratos - esses recursos incluem criar um novo contrato e retornar os contratos por filtro"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/contratos": {
+      "post": {
+        "summary": "Criar um novo contrato",
+        "operationId": "criarContrato",
+        "description": "Permite criar um novo contrato, definindo as informações necessárias para configuração da recorrência, como período, produtos/serviços vinculados e demais parâmetros do contrato.",
+        "tags": [
+          "v1"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContratoToCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContratoToCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "summary": "Retornar os contratos por filtro",
+        "operationId": "listarContratos",
+        "description": "Permite consultar contratos existentes, com suporte a filtros que facilitam a busca e a gestão dos contratos criados (ex. por cliente, data, status, entre outros).",
+        "tags": [
+          "v1"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pagina",
+            "description": "Página",
+            "example": 1,
+            "schema": {
+              "type": "number",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "tamanho_pagina",
+            "description": "Tamanho da página (máximo 50)",
+            "example": 10,
+            "schema": {
+              "type": "number",
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "campo_ordenado_ascendente",
+            "description": "Campo para ordenação ascendente. Se informado ele desconsidera o valor do campo_ordenado_descendente.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DATA_INICIO",
+                "DATA_FIM"
+              ],
+              "example": "DATA_INICIO"
+            }
+          },
+          {
+            "in": "query",
+            "name": "campo_ordenado_descendente",
+            "description": "Campo para ordenação descendente. Se este campo for utilizado, o campo campo_ordenado_ascendente  não deverá ser informado.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DATA_INICIO",
+                "DATA_FIM"
+              ],
+              "example": "DATA_INICIO"
+            }
+          },
+          {
+            "in": "query",
+            "name": "busca_textual",
+            "description": "Busca textual por nome",
+            "example": "Contrato 1",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "cliente_id",
+            "description": "id do cliente",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_inicio",
+            "description": "Data inicio do intervalo de busca",
+            "example": "2026-08-15",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_fim",
+            "description": "Data fim do intervalo de busca",
+            "example": "2027-08-15",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListagemContratoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/contratos/proximo-numero": {
+      "get": {
+        "summary": "Retornar o próximo número do contrato disponível",
+        "operationId": "getNextContractNumber",
+        "description": "Permite consultar o próximo número de contrato a ser utilizado no momento da criação.",
+        "tags": [
+          "v1"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "nullable": true,
+                  "example": 4512645
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token de autorização Bearer JWT"
+      }
+    },
+    "schemas": {
+      "ContratoToCreateRequest": {
+        "type": "object",
+        "required": [
+          "id_cliente",
+          "itens",
+          "condicao_pagamento",
+          "termos"
+        ],
+        "properties": {
+          "id_cliente": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do cliente",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "data_emissao": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de emissão",
+            "example": "2021-01-01"
+          },
+          "id_categoria": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id da categoria",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "id_centro_custo": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do centro de custo",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "id_vendedor": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do vendedor",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "observacoes": {
+            "type": "string",
+            "description": "Observações do pagamento",
+            "example": "Pagamento realizado em parcela única."
+          },
+          "observacoes_pagamento": {
+            "type": "string",
+            "description": "Observações complementares da nota fiscal",
+            "example": "Pagamento à vista."
+          },
+          "termos": {
+            "$ref": "#/components/schemas/Termo"
+          },
+          "composicao_de_valor": {
+            "$ref": "#/components/schemas/ComposicaoDeValor"
+          },
+          "condicao_pagamento": {
+            "$ref": "#/components/schemas/CondicaoPagamento"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      "ComposicaoDeValor": {
+        "type": "object",
+        "properties": {
+          "frete": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor do frete",
+            "example": 10
+          },
+          "desconto": {
+            "$ref": "#/components/schemas/Desconto"
+          }
+        }
+      },
+      "Desconto": {
+        "type": "object",
+        "required": [
+          "tipo",
+          "valor"
+        ],
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "description": "Tipo de desconto",
+            "enum": [
+              "PORCENTAGEM",
+              "VALOR"
+            ],
+            "example": "PORCENTAGEM"
+          },
+          "valor": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor do desconto",
+            "example": 10
+          }
+        }
+      },
+      "ContratoToCreateResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do contrato",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "id_legado": {
+            "type": "integer",
+            "format": "int64",
+            "description": "id legado",
+            "example": 1234
+          },
+          "id_venda": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id da venda",
+            "example": "6bac0a7f-0422-48a9-86ea-0b1f0a6f9db9"
+          }
+        }
+      },
+      "Termo": {
+        "type": "object",
+        "required": [
+          "tipo_frequencia",
+          "tipo_expiracao",
+          "data_inicio",
+          "data_fim",
+          "numero"
+        ],
+        "properties": {
+          "tipo_frequencia": {
+            "type": "string",
+            "enum": [
+              "MENSAL",
+              "ANUAL"
+            ],
+            "example": "MENSAL"
+          },
+          "tipo_expiracao": {
+            "type": "string",
+            "enum": [
+              "DATA",
+              "NUNCA"
+            ],
+            "example": "DATA"
+          },
+          "data_inicio": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de início",
+            "example": "2021-01-01"
+          },
+          "data_fim": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de fim",
+            "example": "2021-12-31"
+          },
+          "intervalo_frequencia": {
+            "type": "integer",
+            "description": "Intervalo de frequência deve ser sempre maior ou igual a 1",
+            "example": 1
+          },
+          "dia_emissao_venda": {
+            "type": "integer",
+            "description": "Dia de emissão do contrato",
+            "example": 1
+          },
+          "numero": {
+            "type": "integer",
+            "description": "O número do contrato deve ser único",
+            "example": 1
+          }
+        }
+      },
+      "CondicaoPagamento": {
+        "type": "object",
+        "required": [
+          "dia_vencimento",
+          "primeira_data_vencimento"
+        ],
+        "properties": {
+          "tipo_pagamento": {
+            "type": "string",
+            "description": "Tipo de pagamento",
+            "enum": [
+              "BOLETO_BANCARIO",
+              "CARTAO_CREDITO",
+              "CARTAO_DEBITO",
+              "CARTEIRA_DIGITAL",
+              "CASHBACK",
+              "CHEQUE",
+              "CREDITO_LOJA",
+              "CREDITO_VIRTUAL",
+              "DEPOSITO_BANCARIO",
+              "DINHEIRO",
+              "OUTRO",
+              "DEBITO_AUTOMATICO",
+              "CARTAO_CREDITO_VIA_LINK",
+              "PIX_PAGAMENTO_INSTANTANEO",
+              "PIX_COBRANCA",
+              "PROGRAMA_FIDELIDADE",
+              "SEM_PAGAMENTO",
+              "TRANSFERENCIA_BANCARIA",
+              "VALE_ALIMENTACAO",
+              "VALE_COMBUSTIVEL",
+              "VALE_PRESENTE",
+              "VALE_REFEICAO"
+            ],
+            "example": "BOLETO_BANCARIO"
+          },
+          "id_conta_financeira": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id da conta financeira",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "dia_vencimento": {
+            "type": "integer",
+            "description": "Dia de vencimento",
+            "example": 10
+          },
+          "primeira_data_vencimento": {
+            "type": "string",
+            "format": "date",
+            "description": "Primeira data de vencimento",
+            "example": "2021-01-10"
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "required": [
+          "id",
+          "quantidade",
+          "valor"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do item",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "quantidade": {
+            "type": "integer",
+            "description": "Quantidade do produto",
+            "example": 10
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição do produto",
+            "example": "Produto 1"
+          },
+          "valor": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor unitário do item",
+            "example": 100
+          },
+          "valor_custo": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor de custo do item",
+            "example": 100
+          }
+        }
+      },
+      "ListagemContratoResponse": {
+        "type": "object",
+        "properties": {
+          "itens_totais": {
+            "type": "integer",
+            "example": 6
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListagemContratoItemResponse"
+            }
+          }
+        }
+      },
+      "ListagemContratoItemResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "description": "id do contrato"
+          },
+          "cliente": {
+            "$ref": "#/components/schemas/ClienteContratoResponse"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do contrato",
+            "example": "ATIVO",
+            "enum": [
+              "ATIVO",
+              "INATIVO"
+            ]
+          },
+          "proximo_vencimento": {
+            "type": "string",
+            "description": "Data do próximo vencimento",
+            "example": "2026-08-15"
+          },
+          "data_inicio": {
+            "type": "string",
+            "description": "Data de início",
+            "example": "2026-08-15"
+          },
+          "numero": {
+            "type": "integer",
+            "description": "Número do contrato",
+            "example": 1014
+          }
+        }
+      },
+      "ClienteContratoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "id do cliente",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "nome": {
+            "type": "string",
+            "description": "Nome do cliente",
+            "example": "João da Silva"
+          }
+        }
+      }
+    }
+  }
+}
