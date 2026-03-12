@@ -312,6 +312,19 @@
     <span class="uc-score" style="color:#4caf50">~95%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Marcos &mdash; 30 client portfolios</div>
+        <p>Opens a single aging dashboard every Monday. Instantly sees which clients have overdue invoices piling up, grouped by 1&ndash;30, 31&ndash;60, and 60+ day buckets &mdash; no spreadsheet assembly needed.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Lucia &mdash; Morning cash check</div>
+        <p>Starts the day knowing exactly how much is outstanding, who owes what, and which invoices are about to become overdue. Prioritizes follow-up calls before the first coffee gets cold.</p>
+      </div>
+    </div>
+
     <div class="callout info">
       <h4>API's Sweet Spot</h4>
       <p>This is the strongest use case. Both search endpoints provide rich filtering by status, date range, amount range, customer/supplier, category, and cost center &mdash; everything for a comprehensive aging dashboard.</p>
@@ -379,19 +392,6 @@
       <tr><td><code>fatura</code></td><td>Linked invoice (NFe/NFS-e number and type)</td></tr>
       <tr><td><code>conciliado</code></td><td>Whether reconciled with bank (boolean, read-only)</td></tr>
     </table>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Marcos &mdash; 30 client portfolios</div>
-        <p>Opens a single aging dashboard every Monday. Instantly sees which clients have overdue invoices piling up, grouped by 1&ndash;30, 31&ndash;60, and 60+ day buckets &mdash; no spreadsheet assembly needed.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Lucia &mdash; Morning cash check</div>
-        <p>Starts the day knowing exactly how much is outstanding, who owes what, and which invoices are about to become overdue. Prioritizes follow-up calls before the first coffee gets cold.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -407,6 +407,19 @@
     <span class="uc-score" style="color:#4caf50">~90%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Sofia &mdash; 45 clients</div>
+        <p>AI scores each debtor by recovery probability. R$3k at 30% recovery chance gets priority over R$12k at 95% &mdash; the R$12k customer always pays late but always pays.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Ana &mdash; Overdue list</div>
+        <p>Her overdue list is sorted by urgency, not just amount. She calls the risky ones first, catching at-risk debts early instead of wasting time on reliable late payers.</p>
+      </div>
+    </div>
+
     <div class="section-header">What We Build</div>
     <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;">Rank overdue customers by <strong>expected recovery value</strong> (probability of payment &times; amount owed) instead of sorting by amount or days overdue. Focus effort where it matters most.</p>
 
@@ -451,19 +464,6 @@
         </ul>
       </div>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Sofia &mdash; 45 clients</div>
-        <p>AI scores each debtor by recovery probability. R$3k at 30% recovery chance gets priority over R$12k at 95% &mdash; the R$12k customer always pays late but always pays.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Ana &mdash; Overdue list</div>
-        <p>Her overdue list is sorted by urgency, not just amount. She calls the risky ones first, catching at-risk debts early instead of wasting time on reliable late payers.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -479,6 +479,19 @@
     <span class="uc-score" style="color:#29b6f6">~85%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Patricia &mdash; Weekly client projections</div>
+        <p>Generates 4-week cashflow forecasts for each client every Monday. Catches a R$40k shortfall coming in week 3 for a retail client &mdash; advises them to arrange a credit line now instead of scrambling later.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Eduardo &mdash; Planning ahead</div>
+        <p>Sees a rolling 30-day forecast on his dashboard. Notices that next week's payables exceed expected receivables by R$15k. Delays a non-urgent supplier payment to avoid dipping below his safety margin.</p>
+      </div>
+    </div>
+
     <div class="section-header">Data Sources Available via API</div>
     <table>
       <tr><th>Direction</th><th>Data Source</th><th>Endpoint</th><th>Key Fields</th><th>Status</th></tr>
@@ -543,19 +556,6 @@
       <h4>Pagination</h4>
       <p>Financial endpoints support up to <strong>1,000 records/page</strong>. For a mid-size business, a single page per direction suffices. Contracts endpoint maxes at <strong>50/page</strong>.</p>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Patricia &mdash; Weekly client projections</div>
-        <p>Generates 4-week cashflow forecasts for each client every Monday. Catches a R$40k shortfall coming in week 3 for a retail client &mdash; advises them to arrange a credit line now instead of scrambling later.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Eduardo &mdash; Planning ahead</div>
-        <p>Sees a rolling 30-day forecast on his dashboard. Notices that next week's payables exceed expected receivables by R$15k. Delays a non-urgent supplier payment to avoid dipping below his safety margin.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -571,6 +571,19 @@
     <span class="uc-score" style="color:#29b6f6">~85%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Jo&atilde;o &mdash; Client health reports</div>
+        <p>Auto-generates monthly payment reliability reports. Flags clients whose scores dropped &gt;15 points this quarter &mdash; early warning before defaults happen.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Carlos &mdash; Credit decisions</div>
+        <p>Sees a reliability badge next to each customer. Checks the score before accepting a large order on credit &mdash; instant creditworthiness signal.</p>
+      </div>
+    </div>
+
     <div class="section-header">What We Build</div>
     <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;">Score each customer/supplier (0&ndash;100) on payment reliability based on historical patterns: average delay, partial payment frequency, write-off rate, and trend direction.</p>
 
@@ -613,19 +626,6 @@
         </ul>
       </div>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Jo&atilde;o &mdash; Client health reports</div>
-        <p>Auto-generates monthly payment reliability reports. Flags clients whose scores dropped &gt;15 points this quarter &mdash; early warning before defaults happen.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Carlos &mdash; Credit decisions</div>
-        <p>Sees a reliability badge next to each customer. Checks the score before accepting a large order on credit &mdash; instant creditworthiness signal.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -641,6 +641,19 @@
     <span class="uc-score" style="color:#ab47bc">~80%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Fernanda &mdash; 200 transactions/month/client</div>
+        <p>The system pre-fills categories with high accuracy &mdash; she just confirms. Saves ~3 hours per client per month. Misclassification errors that cause tax headaches drop dramatically.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Ricardo &mdash; New payable entry</div>
+        <p>Creates a new payable. The system suggests "Marketing &ndash; Online Advertising" based on supplier name and amount pattern. One click instead of scrolling through 123 categories.</p>
+      </div>
+    </div>
+
     <div class="section-header">What We Build</div>
     <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;">Auto-suggest the correct financial category (from 123 available) for new transactions based on description, amount, entity, and historical patterns.</p>
 
@@ -685,19 +698,6 @@
         </ul>
       </div>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Fernanda &mdash; 200 transactions/month/client</div>
-        <p>The system pre-fills categories with high accuracy &mdash; she just confirms. Saves ~3 hours per client per month. Misclassification errors that cause tax headaches drop dramatically.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Ricardo &mdash; New payable entry</div>
-        <p>Creates a new payable. The system suggests "Marketing &ndash; Online Advertising" based on supplier name and amount pattern. One click instead of scrolling through 123 categories.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -713,6 +713,19 @@
     <span class="uc-score" style="color:#ab47bc">~80%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Rafael &mdash; Pre-close review</div>
+        <p>Before monthly close, runs the outlier check across all clients. Catches a R$18k supplier invoice filed under "Office Supplies" that should be "Equipment" &mdash; flags it before it distorts the P&amp;L.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Camila &mdash; Expense alert</div>
+        <p>Gets a notification that "Marketing" spending is 3x the monthly average. Investigates &mdash; turns out a duplicate payment was processed. Catches it within days instead of discovering it at quarter-end.</p>
+      </div>
+    </div>
+
     <div class="section-header">Data Available for Anomaly Detection</div>
     <table>
       <tr><th>Data Point</th><th>Source Endpoint</th><th>Key Fields</th><th>Volume</th></tr>
@@ -796,19 +809,6 @@
         <li>No budget data &mdash; can't compare actuals vs budgets</li>
       </ul>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Rafael &mdash; Pre-close review</div>
-        <p>Before monthly close, runs the outlier check across all clients. Catches a R$18k supplier invoice filed under "Office Supplies" that should be "Equipment" &mdash; flags it before it distorts the P&amp;L.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Camila &mdash; Expense alert</div>
-        <p>Gets a notification that "Marketing" spending is 3x the monthly average. Investigates &mdash; turns out a duplicate payment was processed. Catches it within days instead of discovering it at quarter-end.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -824,6 +824,19 @@
     <span class="uc-score" style="color:#e91e63">~70%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Beatriz &mdash; Client monthly reports</div>
+        <p>Sends each client a 3-sentence plain-language summary every month: "Receita de R$52k, alta de 8% sobre fevereiro. R$6.200 em cobran&ccedil;as vencidas h&aacute; mais de 30 dias. Maior despesa: log&iacute;stica com R$14k." No one needs to open a spreadsheet.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Thiago &mdash; Quick pulse check</div>
+        <p>Opens the app and reads a snapshot: revenue up, expenses steady, one category spiked. Gets the full picture in 10 seconds without digging through line items.</p>
+      </div>
+    </div>
+
     <p style="color:#b0c4d8;font-size:14px;line-height:1.6;margin-bottom:20px;">
       Can the API produce: <em style="color:#81d4fa;">"You had R$45,000 in revenue this month, up 12% from last month. R$8,200 in unpaid invoices older than 30 days. Largest expense: supplies at R$12,000."</em>
     </p>
@@ -875,19 +888,6 @@
       <h4>Recommendation</h4>
       <p>Build a thin <strong>aggregation microservice</strong> that runs 4&ndash;5 queries daily, caches results, exposes a <code>/summary</code> endpoint. Feed into LLM/template for natural-language output. ~5 API calls per summary.</p>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Beatriz &mdash; Client monthly reports</div>
-        <p>Sends each client a 3-sentence plain-language summary every month: "Receita de R$52k, alta de 8% sobre fevereiro. R$6.200 em cobran&ccedil;as vencidas h&aacute; mais de 30 dias. Maior despesa: log&iacute;stica com R$14k." No one needs to open a spreadsheet.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Thiago &mdash; Quick pulse check</div>
-        <p>Opens the app and reads a snapshot: revenue up, expenses steady, one category spiked. Gets the full picture in 10 seconds without digging through line items.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -903,6 +903,19 @@
     <span class="uc-score" style="color:#ff9800">~70%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Anomaly alert</div>
+        <p>Instead of "ANOMALY: R$28k office supplies," sees: <em>"R$28.000 em material de escrit&oacute;rio &mdash; 6x acima da m&eacute;dia mensal de R$4.700. &Uacute;ltimos 3 meses: R$4.200, R$5.100, R$4.800. Verificar se deveria ser 'Equipamentos'."</em></p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Weekly digest</div>
+        <p>"2 transa&ccedil;&otilde;es incomuns esta semana..." with clear, plain-language explanations. Non-technical users understand what happened without data analysis skills.</p>
+      </div>
+    </div>
+
     <div class="section-header">What We Build</div>
     <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;">When unusual transactions are detected (amount outliers, timing outliers, category spikes), generate a <strong>human-readable explanation</strong> of WHY it's unusual, with context and suggested action. Layers on top of Outlier Detection.</p>
 
@@ -948,19 +961,6 @@
         </ul>
       </div>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Anomaly alert</div>
-        <p>Instead of "ANOMALY: R$28k office supplies," sees: <em>"R$28.000 em material de escrit&oacute;rio &mdash; 6x acima da m&eacute;dia mensal de R$4.700. &Uacute;ltimos 3 meses: R$4.200, R$5.100, R$4.800. Verificar se deveria ser 'Equipamentos'."</em></p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Weekly digest</div>
-        <p>"2 transa&ccedil;&otilde;es incomuns esta semana..." with clear, plain-language explanations. Non-technical users understand what happened without data analysis skills.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -976,6 +976,19 @@
     <span class="uc-score" style="color:#e91e63">~65%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Portfolio dashboard</div>
+        <p>Shows 3 clients with high churn risk. Alerts the account manager to schedule retention meetings before they leave &mdash; proactive instead of reactive.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Key client alert</div>
+        <p>Sees that a key client's order value dropped 40% over 3 months. Proactively reaches out before losing them entirely.</p>
+      </div>
+    </div>
+
     <div class="section-header">What We Build</div>
     <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;">Detect declining customer engagement from financial signals &mdash; shrinking invoice sizes, increasing payment delays, reduced order frequency, shift away from recurring contracts.</p>
 
@@ -1021,19 +1034,6 @@
         </ul>
       </div>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Portfolio dashboard</div>
-        <p>Shows 3 clients with high churn risk. Alerts the account manager to schedule retention meetings before they leave &mdash; proactive instead of reactive.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Key client alert</div>
-        <p>Sees that a key client's order value dropped 40% over 3 months. Proactively reaches out before losing them entirely.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -1049,6 +1049,19 @@
     <span class="uc-score" style="color:#009688">~60%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Auto-detected patterns</div>
+        <p>System auto-detects that "Sorvetes Brasil" has 3x revenue Dec&ndash;Feb and a dip in Jun&ndash;Aug. Cashflow forecasts adjust automatically &mdash; no manual seasonal config needed.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Working capital planning</div>
+        <p>Dashboard shows "You typically see a 30% revenue dip in April&ndash;May" &mdash; helps plan working capital and supplier payments proactively.</p>
+      </div>
+    </div>
+
     <div class="section-header">What We Build</div>
     <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;">Auto-detect business seasonality from 12+ months of receivable/payable data. Surface cyclical patterns without manual configuration. Feed into cashflow forecasting for better accuracy.</p>
 
@@ -1092,19 +1105,6 @@
         </ul>
       </div>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Auto-detected patterns</div>
-        <p>System auto-detects that "Sorvetes Brasil" has 3x revenue Dec&ndash;Feb and a dip in Jun&ndash;Aug. Cashflow forecasts adjust automatically &mdash; no manual seasonal config needed.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Working capital planning</div>
-        <p>Dashboard shows "You typically see a 30% revenue dip in April&ndash;May" &mdash; helps plan working capital and supplier payments proactively.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -1120,6 +1120,19 @@
     <span class="uc-score" style="color:#ff9800">~55%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Daniela &mdash; Automated follow-ups</div>
+        <p>Sets up a pipeline that detects overdue invoices via API, checks if Conta Azul already sent a reminder, and fires a polite WhatsApp message via Twilio if not. Clients pay faster, she follows up less.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Felipe &mdash; No more awkward calls</div>
+        <p>Customers receive professional, timely reminders 3 and 7 days after an invoice goes overdue. Most pay before Felipe ever has to pick up the phone &mdash; and when he does, the reminder history is right there.</p>
+      </div>
+    </div>
+
     <div class="callout warn">
       <h4>Read-Only Limitation</h4>
       <p>The API exposes rich collection and notification data but provides <strong>no write endpoints</strong>. You can see every reminder Conta Azul sent &mdash; but you can't trigger one via API.</p>
@@ -1189,19 +1202,6 @@
         <li><strong>Caveat:</strong> Self-sent notifications won't appear in Conta Azul's history.</li>
       </ul>
     </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Daniela &mdash; Automated follow-ups</div>
-        <p>Sets up a pipeline that detects overdue invoices via API, checks if Conta Azul already sent a reminder, and fires a polite WhatsApp message via Twilio if not. Clients pay faster, she follows up less.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Felipe &mdash; No more awkward calls</div>
-        <p>Customers receive professional, timely reminders 3 and 7 days after an invoice goes overdue. Most pay before Felipe ever has to pick up the phone &mdash; and when he does, the reminder history is right there.</p>
-      </div>
-    </div>
   </div>
 </details>
 
@@ -1217,6 +1217,19 @@
     <span class="uc-score" style="color:#78909c">~30%</span>
   </summary>
   <div class="uc-body">
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Renata &mdash; 45 client sync</div>
+        <p>Uses multi-ID array filters to pull receivables for all 45 clients in a handful of API calls instead of 45 separate requests. Monthly data refresh runs in minutes, not hours.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Gustavo &mdash; Nightly data pipeline</div>
+        <p>An overnight job syncs all financial data using incremental <code>data_alteracao</code> filters. By morning, dashboards are fresh &mdash; and the API rate limit is never hit because only changed records are fetched.</p>
+      </div>
+    </div>
+
     <div class="callout">
       <h4>Zero Financial Batch Endpoints</h4>
       <p>No batch/bulk endpoints for financial data. Every record must be handled individually or via paginated search. Batch only exists for Person and Sales APIs.</p>
@@ -1281,19 +1294,6 @@
           <li>No parallel batch creates for financials</li>
           <li>Contracts: 50/page, limited filtering</li>
         </ul>
-      </div>
-    </div>
-
-    <div class="examples-row">
-      <div class="example-card accountant">
-        <div class="ec-label">Accountant</div>
-        <div class="ec-name">Renata &mdash; 45 client sync</div>
-        <p>Uses multi-ID array filters to pull receivables for all 45 clients in a handful of API calls instead of 45 separate requests. Monthly data refresh runs in minutes, not hours.</p>
-      </div>
-      <div class="example-card owner">
-        <div class="ec-label">Business Owner</div>
-        <div class="ec-name">Gustavo &mdash; Nightly data pipeline</div>
-        <p>An overnight job syncs all financial data using incremental <code>data_alteracao</code> filters. By morning, dashboards are fresh &mdash; and the API rate limit is never hit because only changed records are fetched.</p>
       </div>
     </div>
   </div>
