@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conta Azul API - AI/ML Use Cases</title>
+<title>Conta Azul API - Insights & AI/ML Use Cases</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -39,7 +39,7 @@
   nav .nav-brand { color: #4fc3f7; font-weight: 700; font-size: 14px; margin-right: 10px; }
 
   /* -- Verdict Cards Grid -- */
-  .verdict-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 28px 0; }
+  .verdict-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 28px 0; }
   .verdict-card {
     background: #152230; border-radius: 12px; padding: 20px; border: 1px solid #2a3f55;
     transition: transform 0.2s, border-color 0.3s; cursor: pointer; position: relative; overflow: hidden;
@@ -77,6 +77,10 @@
     padding: 24px; border: 1px solid #2a3f55; border-top: none;
     border-radius: 0 0 12px 12px; background: #0f1923;
   }
+  .use-case .uc-rank {
+    font-size: 11px; padding: 2px 8px; border-radius: 10px; flex-shrink: 0;
+    background: #1a2735; color: #7a8fa6; font-weight: 700;
+  }
 
   /* -- Section headers inside use cases -- */
   .section-header {
@@ -104,6 +108,13 @@
   .badge.full { background: #4caf5022; color: #4caf50; border: 1px solid #4caf5044; }
   .badge.partial { background: #ff980022; color: #ff9800; border: 1px solid #ff980044; }
   .badge.gap { background: #f4433622; color: #f44336; border: 1px solid #f4433644; }
+  .verdict-mini {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .verdict-mini.yes { background: #4caf5022; color: #4caf50; border: 1px solid #4caf5044; }
+  .verdict-mini.partial { background: #ff980022; color: #ff9800; border: 1px solid #ff980044; }
+  .verdict-mini.no { background: #f4433622; color: #f44336; border: 1px solid #f4433644; }
 
   /* -- Architecture Diagrams -- */
   .arch-flow {
@@ -124,6 +135,17 @@
   .arch-box.external .ab-title { color: #ab47bc; }
   .arch-box.compute { border-color: #29b6f666; }
   .arch-box.compute .ab-title { color: #29b6f6; }
+
+  /* -- Formula Box -- */
+  .formula-box {
+    background: #12222e; border: 1px solid #1a3a4e; border-radius: 10px;
+    padding: 20px 24px; margin: 20px 0; font-family: 'SF Mono', Consolas, monospace;
+    font-size: 13px; line-height: 1.8; color: #81d4fa; overflow-x: auto;
+  }
+  .formula-box .comment { color: #546e7a; }
+  .formula-box .op { color: #4caf50; }
+  .formula-box .neg { color: #f44336; }
+  .formula-box .var { color: #ffcc80; }
 
   /* -- Matrix -- */
   .matrix-wrap { overflow-x: auto; margin: 20px 0; }
@@ -157,6 +179,23 @@
   .example-card .ec-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
   .example-card p { font-size: 13px; color: #b0c4d8; line-height: 1.6; }
 
+  /* -- Pipeline -- */
+  .pipeline { margin: 24px 0; }
+  .stage { display: flex; align-items: stretch; margin-bottom: 2px; }
+  .stage-num { width: 40px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #7a8fa6; flex-shrink: 0; }
+  .stage-bar { flex: 1; padding: 12px 16px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .stage-bar .sb-title { font-size: 13px; font-weight: 600; }
+  .stage-bar .sb-detail { font-size: 12px; color: #b0c4d8; }
+  .stage-bar .sb-pct { font-size: 13px; font-weight: 700; }
+  .stage.s1 .stage-bar { background: #4caf5018; border: 1px solid #4caf5033; }
+  .stage.s1 .sb-title, .stage.s1 .sb-pct { color: #4caf50; }
+  .stage.s2 .stage-bar { background: #66bb6a18; border: 1px solid #66bb6a33; }
+  .stage.s2 .sb-title, .stage.s2 .sb-pct { color: #66bb6a; }
+  .stage.s3 .stage-bar { background: #29b6f618; border: 1px solid #29b6f633; }
+  .stage.s3 .sb-title, .stage.s3 .sb-pct { color: #29b6f6; }
+  .stage.s4 .stage-bar { background: #ff980018; border: 1px solid #ff980033; }
+  .stage.s4 .sb-title, .stage.s4 .sb-pct { color: #ff9800; }
+
   /* -- Callouts -- */
   .callout {
     background: #1a272e; border-left: 3px solid #f44336; border-radius: 0 10px 10px 0;
@@ -183,6 +222,7 @@
   .rm-phase.p1 { border-left: 3px solid #4caf50; } .rm-phase.p1 .rm-title { color: #4caf50; }
   .rm-phase.p2 { border-left: 3px solid #29b6f6; } .rm-phase.p2 .rm-title { color: #29b6f6; }
   .rm-phase.p3 { border-left: 3px solid #ff9800; } .rm-phase.p3 .rm-title { color: #ff9800; }
+  .rm-phase.p4 { border-left: 3px solid #ab47bc; } .rm-phase.p4 .rm-title { color: #ab47bc; }
 
   footer {
     text-align: center; padding: 40px 20px; color: #3a5570; font-size: 12px;
@@ -213,33 +253,47 @@
 </nav>
 
 <header>
-  <h1>AI/ML Use Cases &mdash; What Can We Build?</h1>
-  <p>6 use cases buildable from the Conta Azul public API. Model-agnostic &mdash; focused on what data is available and what value it delivers.</p>
+  <h1>Insights &amp; AI/ML Use Cases &mdash; Ranked by Value</h1>
+  <p>12 use cases buildable from the Conta Azul public API, ranked by business impact &times; API readiness &times; implementation effort.</p>
 </header>
 
 <!-- TIER CARDS -->
 <div class="container">
   <div class="verdict-grid">
     <div class="verdict-card" style="border-color:#4caf5044;">
-      <h3 style="color:#4caf50">API-Ready</h3>
-      <div class="score" style="color:#4caf50">3 Use Cases</div>
-      <div class="label">Direct data fit &mdash; can build today</div>
-      <span class="effort" style="background:#4caf5022;color:#4caf50;border:1px solid #4caf5044;">Quick wins</span>
+      <h3 style="color:#4caf50">Highest Value</h3>
+      <div class="score" style="color:#4caf50">Tier 1</div>
+      <div class="label">High readiness, high impact, low-to-medium effort</div>
+      <span class="effort" style="background:#4caf5022;color:#4caf50;border:1px solid #4caf5044;">Start here</span>
       <ul class="vc-list">
-        <li>Collections Prioritization</li>
-        <li>Payment Behavior Scoring</li>
-        <li>Smart Transaction Classification</li>
+        <li>#1 Outstanding Payments ~95%</li>
+        <li>#2 Collections Prioritization ~90%</li>
+        <li>#3 Cashflow Forecasting ~85%</li>
+        <li>#4 Payment Behavior Scoring ~85%</li>
+      </ul>
+    </div>
+    <div class="verdict-card" style="border-color:#29b6f644;">
+      <h3 style="color:#29b6f6">High Value</h3>
+      <div class="score" style="color:#29b6f6">Tier 2</div>
+      <div class="label">Good data fit, medium-to-high effort</div>
+      <span class="effort" style="background:#29b6f622;color:#29b6f6;border:1px solid #29b6f644;">Next wave</span>
+      <ul class="vc-list">
+        <li>#5 Smart Classification ~80%</li>
+        <li>#6 Outlier Detection ~80%</li>
+        <li>#7 Revenue &amp; Expense Summary ~70%</li>
+        <li>#8 Anomaly Narratives ~70%</li>
       </ul>
     </div>
     <div class="verdict-card" style="border-color:#ff980044;">
-      <h3 style="color:#ff9800">Requires Historical Depth</h3>
-      <div class="score" style="color:#ff9800">3 Use Cases</div>
-      <div class="label">Need 6&ndash;12 months of accumulated data</div>
-      <span class="effort" style="background:#ff980022;color:#ff9800;border:1px solid #ff980044;">Build pipeline first</span>
+      <h3 style="color:#ff9800">Build Over Time</h3>
+      <div class="score" style="color:#ff9800">Tier 3</div>
+      <div class="label">Needs historical depth or has API gaps</div>
+      <span class="effort" style="background:#ff980022;color:#ff9800;border:1px solid #ff980044;">Pipeline first</span>
       <ul class="vc-list">
-        <li>Anomaly Narratives</li>
-        <li>Customer Churn Risk</li>
-        <li>Seasonal Pattern Detection</li>
+        <li>#9 Customer Churn Risk ~65%</li>
+        <li>#10 Seasonal Patterns ~60%</li>
+        <li>#11 Payment Reminders ~55%</li>
+        <li>#12 Batch &amp; Pagination ~30%</li>
       </ul>
     </div>
   </div>
@@ -247,10 +301,95 @@
 
 <div class="container">
 
-<!-- UC1: COLLECTIONS PRIORITIZATION -->
+<!-- ================================================================ -->
+<!-- #1: OUTSTANDING PAYMENTS -->
+<!-- ================================================================ -->
+<details class="use-case" id="uc-outstanding">
+  <summary>
+    <div class="uc-icon" style="background:#4caf5022;color:#4caf50">!</div>
+    <span class="uc-rank">#1</span>
+    <span style="color:#4caf50">Outstanding Payments</span>
+    <span class="uc-effort" style="background:#4caf5022;color:#4caf50;border:1px solid #4caf5044;">Low effort</span>
+    <span class="uc-score" style="color:#4caf50">~95%</span>
+  </summary>
+  <div class="uc-body">
+    <div class="callout info">
+      <h4>API's Sweet Spot</h4>
+      <p>This is the strongest use case. Both search endpoints provide rich filtering by status, date range, amount range, customer/supplier, category, and cost center &mdash; everything for a comprehensive aging dashboard.</p>
+    </div>
+
+    <div class="section-header">Available Filters</div>
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <tr><th style="text-align:left">Filter</th><th>Receivables</th><th>Payables</th><th>Description</th></tr>
+        <tr><td><code>status</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">EM_ABERTO, ATRASADO, RECEBIDO_PARCIAL, RECEBIDO, PERDIDO, RENEGOCIADO</td></tr>
+        <tr><td><code>data_vencimento_de/ate</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Due date range (required)</td></tr>
+        <tr><td><code>data_competencia_de/ate</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Accrual date range</td></tr>
+        <tr><td><code>data_pagamento_de/ate</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Payment date range</td></tr>
+        <tr><td><code>data_alteracao_de/ate</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Last modified (ISO 8601, GMT-3)</td></tr>
+        <tr><td><code>valor_de/ate</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Amount range</td></tr>
+        <tr><td><code>ids_clientes / ids_fornecedores</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Customer or supplier UUIDs</td></tr>
+        <tr><td><code>ids_categorias</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Financial category filter</td></tr>
+        <tr><td><code>ids_centros_de_custo</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Cost center filter</td></tr>
+        <tr><td><code>ids_contas_financeiras</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Financial account filter</td></tr>
+        <tr><td><code>descricao</code></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td style="text-align:left">Free-text search</td></tr>
+      </table>
+    </div>
+
+    <div class="section-header">Response Data per Record</div>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Example</th><th>Use</th></tr>
+      <tr><td><code>data_vencimento</code></td><td>date</td><td>2027-08-15</td><td>Calculate days overdue</td></tr>
+      <tr><td><code>total</code></td><td>number</td><td>R$ 781,201.79</td><td>Original obligation amount</td></tr>
+      <tr><td><code>pago</code></td><td>number</td><td>R$ 568,178.00</td><td>Amount already paid</td></tr>
+      <tr><td><code>nao_pago</code></td><td>number</td><td>R$ 213,023.79</td><td>Outstanding balance</td></tr>
+      <tr><td><code>status_traduzido</code></td><td>enum</td><td>ATRASADO</td><td>Current state</td></tr>
+      <tr><td><code>cliente / fornecedor</code></td><td>object</td><td>{id, nome}</td><td>Who owes / is owed</td></tr>
+      <tr><td><code>categorias[]</code></td><td>array</td><td>[{id, nome}]</td><td>Financial classification</td></tr>
+      <tr><td><code>renegociacao</code></td><td>object</td><td>{id, valor}</td><td>If renegotiated</td></tr>
+    </table>
+
+    <div class="section-header">Ready-Made Queries</div>
+    <div class="insight-row">
+      <div class="insight-card">
+        <h4 style="color:#f44336">Aging Report (Receivables)</h4>
+        <ul>
+          <li><strong>1&ndash;30 days overdue:</strong> <code>data_vencimento_ate</code> = yesterday, <code>de</code> = -30 days, <code>status=ATRASADO</code></li>
+          <li><strong>31&ndash;60 days:</strong> same pattern with -60 to -31 day range</li>
+          <li><strong>60+ days:</strong> <code>data_vencimento_ate</code> = -61 days</li>
+          <li>Sum <code>nao_pago</code> per bucket for dashboard</li>
+        </ul>
+      </div>
+      <div class="insight-card">
+        <h4 style="color:#29b6f6">More Queries</h4>
+        <ul>
+          <li><strong>Top debtors:</strong> All ATRASADO, group by <code>cliente.id</code>, sum <code>nao_pago</code></li>
+          <li><strong>Next 7 days:</strong> <code>data_vencimento_de</code> = today, <code>ate</code> = +7 days, <code>status=EM_ABERTO</code></li>
+          <li><strong>Large outstanding:</strong> <code>valor_de=10000</code>, <code>status=[ATRASADO, EM_ABERTO]</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-header">Installment Deep Dive</div>
+    <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;"><code>GET .../parcelas/{id}</code> returns full detail:</p>
+    <table>
+      <tr><th>Field</th><th>Description</th></tr>
+      <tr><td><code>valor_composicao</code></td><td>Breakdown: gross, net, fine, interest, discount, fee</td></tr>
+      <tr><td><code>baixas[]</code></td><td>Payment records with dates, amounts, methods, reconciliation IDs</td></tr>
+      <tr><td><code>solicitacoes_cobrancas[]</code></td><td>Collection request history (boleto, PIX, payment links)</td></tr>
+      <tr><td><code>fatura</code></td><td>Linked invoice (NFe/NFS-e number and type)</td></tr>
+      <tr><td><code>conciliado</code></td><td>Whether reconciled with bank (boolean, read-only)</td></tr>
+    </table>
+  </div>
+</details>
+
+<!-- ================================================================ -->
+<!-- #2: COLLECTIONS PRIORITIZATION -->
+<!-- ================================================================ -->
 <details class="use-case" id="uc-collections">
   <summary>
-    <div class="uc-icon" style="background:#4caf5022;color:#4caf50">1</div>
+    <div class="uc-icon" style="background:#4caf5022;color:#4caf50">&#x24;</div>
+    <span class="uc-rank">#2</span>
     <span style="color:#4caf50">Collections Prioritization</span>
     <span class="uc-effort" style="background:#4caf5022;color:#4caf50;border:1px solid #4caf5044;">API-Ready</span>
     <span class="uc-score" style="color:#4caf50">~90%</span>
@@ -316,10 +455,92 @@
   </div>
 </details>
 
-<!-- UC2: PAYMENT BEHAVIOR SCORING -->
+<!-- ================================================================ -->
+<!-- #3: CASHFLOW FORECASTING -->
+<!-- ================================================================ -->
+<details class="use-case" id="uc-cashflow">
+  <summary>
+    <div class="uc-icon" style="background:#29b6f622;color:#29b6f6">$</div>
+    <span class="uc-rank">#3</span>
+    <span style="color:#29b6f6">Cashflow Forecasting</span>
+    <span class="uc-effort" style="background:#29b6f622;color:#29b6f6;border:1px solid #29b6f644;">Medium effort</span>
+    <span class="uc-score" style="color:#29b6f6">~85%</span>
+  </summary>
+  <div class="uc-body">
+    <div class="section-header">Data Sources Available via API</div>
+    <table>
+      <tr><th>Direction</th><th>Data Source</th><th>Endpoint</th><th>Key Fields</th><th>Status</th></tr>
+      <tr><td rowspan="4" style="color:#4caf50;font-weight:600;">Inflows</td><td>Open receivables</td><td><code>GET .../contas-a-receber/buscar</code></td><td><code>data_vencimento</code>, <code>nao_pago</code>, <code>status</code></td><td><span class="badge full">Full</span></td></tr>
+      <tr><td>Overdue receivables</td><td><code>Same, filter status=ATRASADO</code></td><td><code>data_vencimento</code>, <code>nao_pago</code>, <code>cliente</code></td><td><span class="badge full">Full</span></td></tr>
+      <tr><td>Recurring contracts</td><td><code>GET /v1/contratos</code></td><td><code>proximo_vencimento</code>, <code>tipo_frequencia</code></td><td><span class="badge full">Full</span></td></tr>
+      <tr><td>Pending sales</td><td><code>GET /v1/venda/busca</code></td><td><code>totais.aprovado</code>, <code>totais.esperando_aprovacao</code></td><td><span class="badge full">Full</span></td></tr>
+      <tr><td rowspan="3" style="color:#f44336;font-weight:600;">Outflows</td><td>Open payables</td><td><code>GET .../contas-a-pagar/buscar</code></td><td><code>data_vencimento</code>, <code>nao_pago</code>, <code>status</code></td><td><span class="badge full">Full</span></td></tr>
+      <tr><td>Overdue payables</td><td><code>Same, filter status=ATRASADO</code></td><td><code>data_vencimento</code>, <code>nao_pago</code>, <code>fornecedor</code></td><td><span class="badge full">Full</span></td></tr>
+      <tr><td>Scheduled payments</td><td><code>GET .../parcelas/{id}</code></td><td><code>pagamento_agendado</code>, <code>data_pagamento_previsto</code></td><td><span class="badge partial">Partial</span></td></tr>
+      <tr><td rowspan="2" style="color:#29b6f6;font-weight:600;">Position</td><td>Account balances</td><td><code>GET .../conta-financeira/{id}/saldo-atual</code></td><td><code>saldo_atual</code> (real-time)</td><td><span class="badge full">Full</span></td></tr>
+      <tr><td>Inter-account transfers</td><td><code>GET /v1/financeiro/transferencias</code></td><td>Amount, date, origin/destination</td><td><span class="badge full">Full</span></td></tr>
+    </table>
+
+    <div class="section-header">Forecast Formula</div>
+    <div class="formula-box">
+      <span class="comment">// Today's cash position</span><br>
+      <span class="var">cash_position</span> = <span class="op">&Sigma;</span> saldo_atual <span class="comment">across all active accounts</span><br><br>
+      <span class="comment">// Week N forecast</span><br>
+      <span class="var">week_N</span> = cash_position<br>
+      &nbsp;&nbsp;<span class="op">+</span> <span class="op">&Sigma;</span> receivables due in week N &nbsp;<span class="comment">(nao_pago where status &isin; [EM_ABERTO, RECEBIDO_PARCIAL])</span><br>
+      &nbsp;&nbsp;<span class="neg">&minus;</span> <span class="neg">&Sigma;</span> payables due in week N &nbsp;<span class="comment">(nao_pago where status &isin; [EM_ABERTO, RECEBIDO_PARCIAL])</span><br>
+      &nbsp;&nbsp;<span class="op">+</span> <span class="op">&Sigma;</span> recurring contract amounts due in week N<br>
+      &nbsp;&nbsp;<span class="neg">&minus;</span> <span class="comment">historical late-payment adjustment (per-customer delay factor)</span>
+    </div>
+
+    <div class="section-header">Architecture</div>
+    <div class="arch-flow">
+      <div class="arch-box api"><div class="ab-label">API</div><div class="ab-title">Receivables</div><div class="ab-detail">contas-a-receber/buscar</div></div>
+      <div class="arch-arrow">+</div>
+      <div class="arch-box api"><div class="ab-label">API</div><div class="ab-title">Payables</div><div class="ab-detail">contas-a-pagar/buscar</div></div>
+      <div class="arch-arrow">+</div>
+      <div class="arch-box api"><div class="ab-label">API</div><div class="ab-title">Balances</div><div class="ab-detail">saldo-atual</div></div>
+      <div class="arch-arrow">+</div>
+      <div class="arch-box api"><div class="ab-label">API</div><div class="ab-title">Contracts</div><div class="ab-detail">/v1/contratos</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box compute"><div class="ab-label">Compute</div><div class="ab-title">Forecast Engine</div><div class="ab-detail">Aggregate &amp; project</div></div>
+    </div>
+
+    <div class="insight-row">
+      <div class="insight-card">
+        <h4 style="color:#4caf50">Enrichment Options</h4>
+        <ul>
+          <li>Filter by <code>ids_categorias</code> for departmental forecasts</li>
+          <li>Filter by <code>ids_centros_de_custo</code> for cost center views</li>
+          <li>Use <code>data_pagamento_de/ate</code> on historical data to compute per-customer delay factors</li>
+          <li>P&amp;L (DRE) mapping (<code>/v1/financeiro/categorias-dre</code>) for P&amp;L-aligned projections</li>
+        </ul>
+      </div>
+      <div class="insight-card">
+        <h4 style="color:#f44336">What's Missing</h4>
+        <ul>
+          <li>No dedicated cashflow report endpoint &mdash; must compute client-side</li>
+          <li>No server-side aggregation (sums, averages)</li>
+          <li>Recurring contracts don't expose future installment amounts directly</li>
+          <li>Tax obligations (DAS, payroll) appear as origins but aren't queryable as future obligations</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <h4>Pagination</h4>
+      <p>Financial endpoints support up to <strong>1,000 records/page</strong>. For a mid-size business, a single page per direction suffices. Contracts endpoint maxes at <strong>50/page</strong>.</p>
+    </div>
+  </div>
+</details>
+
+<!-- ================================================================ -->
+<!-- #4: PAYMENT BEHAVIOR SCORING -->
+<!-- ================================================================ -->
 <details class="use-case" id="uc-scoring">
   <summary>
-    <div class="uc-icon" style="background:#29b6f622;color:#29b6f6">2</div>
+    <div class="uc-icon" style="background:#29b6f622;color:#29b6f6">&#9733;</div>
+    <span class="uc-rank">#4</span>
     <span style="color:#29b6f6">Payment Behavior Scoring</span>
     <span class="uc-effort" style="background:#4caf5022;color:#4caf50;border:1px solid #4caf5044;">API-Ready</span>
     <span class="uc-score" style="color:#29b6f6">~85%</span>
@@ -383,12 +604,15 @@
   </div>
 </details>
 
-<!-- UC3: SMART TRANSACTION CLASSIFICATION -->
+<!-- ================================================================ -->
+<!-- #5: SMART TRANSACTION CLASSIFICATION -->
+<!-- ================================================================ -->
 <details class="use-case" id="uc-classification">
   <summary>
-    <div class="uc-icon" style="background:#ab47bc22;color:#ab47bc">3</div>
+    <div class="uc-icon" style="background:#ab47bc22;color:#ab47bc">&#x2630;</div>
+    <span class="uc-rank">#5</span>
     <span style="color:#ab47bc">Smart Transaction Classification</span>
-    <span class="uc-effort" style="background:#4caf5022;color:#4caf50;border:1px solid #4caf5044;">API-Ready</span>
+    <span class="uc-effort" style="background:#29b6f622;color:#29b6f6;border:1px solid #29b6f644;">Medium effort</span>
     <span class="uc-score" style="color:#ab47bc">~80%</span>
   </summary>
   <div class="uc-body">
@@ -452,17 +676,184 @@
   </div>
 </details>
 
-<!-- UC4: ANOMALY NARRATIVES -->
+<!-- ================================================================ -->
+<!-- #6: OUTLIER DETECTION -->
+<!-- ================================================================ -->
+<details class="use-case" id="uc-outlier">
+  <summary>
+    <div class="uc-icon" style="background:#ab47bc22;color:#ab47bc">&#x26A0;</div>
+    <span class="uc-rank">#6</span>
+    <span style="color:#ab47bc">Outlier Detection</span>
+    <span class="uc-effort" style="background:#ab47bc22;color:#ab47bc;border:1px solid #ab47bc44;">High effort</span>
+    <span class="uc-score" style="color:#ab47bc">~80%</span>
+  </summary>
+  <div class="uc-body">
+    <div class="section-header">Data Available for Anomaly Detection</div>
+    <table>
+      <tr><th>Data Point</th><th>Source Endpoint</th><th>Key Fields</th><th>Volume</th></tr>
+      <tr><td>Receivables</td><td><code>.../contas-a-receber/buscar</code></td><td>amount, category, customer, dates, status</td><td>Up to 1000/page</td></tr>
+      <tr><td>Payables</td><td><code>.../contas-a-pagar/buscar</code></td><td>amount, category, supplier, dates, status</td><td>Up to 1000/page</td></tr>
+      <tr><td>Payment details</td><td><code>.../parcelas/{id}</code></td><td>baixas (amounts, methods, fees, interest, discounts)</td><td>1 per call</td></tr>
+      <tr><td>Transfers</td><td><code>/v1/financeiro/transferencias</code></td><td>amount, date, source/destination</td><td>Paginated</td></tr>
+      <tr><td>Sales</td><td><code>/v1/venda/busca</code></td><td>amount, date, customer, items, status</td><td>Up to 50/page</td></tr>
+      <tr><td>Invoices</td><td><code>/v1/notas-fiscais</code></td><td>amounts, dates, customers</td><td>Up to 100/page</td></tr>
+      <tr><td>123 categories</td><td><code>/v1/categorias</code></td><td>name, type (RECEITA/DESPESA), DRE entry</td><td>Static</td></tr>
+      <tr><td>Payment origins</td><td><code>Referencia.origem</code></td><td>16 types: VENDA, COMPRA, DAS, FOLHA, ...</td><td>Per record</td></tr>
+    </table>
+
+    <div class="section-header">Detectable Anomaly Types</div>
+    <div class="insight-row">
+      <div class="insight-card">
+        <h4 style="color:#f44336">Amount Outliers</h4>
+        <ul>
+          <li>Payable above historical mean for category/supplier</li>
+          <li>Unusually high fees/interest (<code>multa</code>, <code>juros</code>)</li>
+          <li>Suspicious discounts (<code>desconto</code> &gt;&gt; typical)</li>
+          <li>Detection: 3&sigma; from rolling 6-month mean per category</li>
+        </ul>
+      </div>
+      <div class="insight-card">
+        <h4 style="color:#ff9800">Timing Outliers</h4>
+        <ul>
+          <li>Payments much earlier/later than typical</li>
+          <li>Payables on unusual dates (weekends, holidays)</li>
+          <li>Receivable overdue far longer than typical</li>
+          <li>Compare <code>data_vencimento</code> vs historical pattern</li>
+        </ul>
+      </div>
+    </div>
+    <div class="insight-row">
+      <div class="insight-card">
+        <h4 style="color:#29b6f6">Behavioral Outliers</h4>
+        <ul>
+          <li>New supplier with unusually large first payment</li>
+          <li>Customer method change (BOLETO &rarr; PIX)</li>
+          <li>Multiple partial payments on single installment</li>
+          <li>Renegotiated installments with significant value changes</li>
+        </ul>
+      </div>
+      <div class="insight-card">
+        <h4 style="color:#ab47bc">Category / Cost Center</h4>
+        <ul>
+          <li>Category spending spike vs previous months</li>
+          <li>New category appearing unexpectedly</li>
+          <li>Cost center allocation pattern changes</li>
+          <li>Unreconciled items for extended periods</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-header">Incremental Sync Strategy</div>
+    <div class="arch-flow">
+      <div class="arch-box api"><div class="ab-label">Initial</div><div class="ab-title">3&ndash;12 months</div><div class="ab-detail">Full historical data</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box compute"><div class="ab-label">Baseline</div><div class="ab-title">Compute Stats</div><div class="ab-detail">Mean, &sigma; per category</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box api"><div class="ab-label">Ongoing</div><div class="ab-title">Poll Changes</div><div class="ab-detail">data_alteracao_de/ate</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box external"><div class="ab-label">Alert</div><div class="ab-title">Flag Outliers</div><div class="ab-detail">Slack / email / dashboard</div></div>
+    </div>
+
+    <div class="section-header">Matching Pipeline (Reconciliation Outliers)</div>
+    <div class="pipeline">
+      <div class="stage s1"><div class="stage-num">1</div><div class="stage-bar"><div><div class="sb-title">Exact Rules</div><div class="sb-detail">Amount match + same date + exact name</div></div><div class="sb-pct">~40%</div></div></div>
+      <div class="stage s2"><div class="stage-num">2</div><div class="stage-bar"><div><div class="sb-title">Fuzzy Rules</div><div class="sb-detail">Amount &plusmn;2% + date &plusmn;3 days + similar name</div></div><div class="sb-pct">~25%</div></div></div>
+      <div class="stage s3"><div class="stage-num">3</div><div class="stage-bar"><div><div class="sb-title">LLM Matching</div><div class="sb-detail">Claude API batch (~$0.02/batch)</div></div><div class="sb-pct">~20%</div></div></div>
+      <div class="stage s4"><div class="stage-num">4</div><div class="stage-bar"><div><div class="sb-title">Human Review</div><div class="sb-detail">Dashboard for manual resolution</div></div><div class="sb-pct">~15%</div></div></div>
+    </div>
+
+    <div class="callout">
+      <h4>Gaps</h4>
+      <ul>
+        <li>No analytics/aggregation endpoint &mdash; compute statistics client-side</li>
+        <li>No webhooks &mdash; must poll using <code>data_alteracao_de/ate</code></li>
+        <li>No audit log &mdash; can't see who made changes</li>
+        <li>No budget data &mdash; can't compare actuals vs budgets</li>
+      </ul>
+    </div>
+  </div>
+</details>
+
+<!-- ================================================================ -->
+<!-- #7: REVENUE & EXPENSE SUMMARY -->
+<!-- ================================================================ -->
+<details class="use-case" id="uc-summary">
+  <summary>
+    <div class="uc-icon" style="background:#e91e6322;color:#e91e63;">&#128172;</div>
+    <span class="uc-rank">#7</span>
+    <span style="color:#e91e63">Revenue &amp; Expense Summary</span>
+    <span class="uc-effort" style="background:#e91e6322;color:#e91e63;border:1px solid #e91e6344;">Medium effort</span>
+    <span class="uc-score" style="color:#e91e63">~70%</span>
+  </summary>
+  <div class="uc-body">
+    <p style="color:#b0c4d8;font-size:14px;line-height:1.6;margin-bottom:20px;">
+      Can the API produce: <em style="color:#81d4fa;">"You had R$45,000 in revenue this month, up 12% from last month. R$8,200 in unpaid invoices older than 30 days. Largest expense: supplies at R$12,000."</em>
+    </p>
+
+    <div class="section-header">Target Sentence Breakdown</div>
+    <table>
+      <tr><th style="width:30%;">Claim</th><th style="width:15%;">Status</th><th style="width:55%;">How to Build</th></tr>
+      <tr><td><strong>"R$45,000 in revenue"</strong></td><td><span class="verdict-mini partial">Buildable</span></td><td>Query receivables with <code>status=RECEBIDO</code> + <code>data_pagamento</code> range. Sum <code>pago</code> client-side.<br><span style="color:#ff9800;font-size:11px;">No server-side SUM.</span></td></tr>
+      <tr><td><strong>"Up 12% from last month"</strong></td><td><span class="verdict-mini partial">Buildable</span></td><td>Same query for previous month. Compute % change client-side.<br><span style="color:#ff9800;font-size:11px;">No built-in MoM comparison.</span></td></tr>
+      <tr><td><strong>"R$8,200 unpaid &gt;30 days"</strong></td><td><span class="verdict-mini yes">Excellent</span></td><td>Query <code>status=ATRASADO</code> + <code>data_vencimento_ate</code> = today-30. Sum <code>nao_pago</code>. API's sweet spot.</td></tr>
+      <tr><td><strong>"Largest expense: supplies"</strong></td><td><span class="verdict-mini partial">Buildable</span></td><td>Query payables by <code>data_competencia</code>. Group by <code>categorias[].id</code>, sum, sort.<br><span style="color:#ff9800;font-size:11px;">No server GROUP BY.</span></td></tr>
+    </table>
+
+    <div class="section-header">Architecture</div>
+    <div class="arch-flow">
+      <div class="arch-box api"><div class="ab-label">Query</div><div class="ab-title">Receivables API</div><div class="ab-detail">Current + previous month</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box api"><div class="ab-label">Query</div><div class="ab-title">Payables API</div><div class="ab-detail">By category</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box compute"><div class="ab-label">Compute</div><div class="ab-title">Aggregation</div><div class="ab-detail">Sum, group, compare</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box external"><div class="ab-label">Format</div><div class="ab-title">LLM / Template</div><div class="ab-detail">Natural-language output</div></div>
+    </div>
+
+    <div class="section-header">Query Pattern</div>
+    <div class="formula-box">
+      <span class="comment">// 1. Revenue this month</span><br>
+      POST <span class="var">/v1/contas-a-receber/buscar</span><br>
+      &nbsp;&nbsp;{ status: <span class="op">"RECEBIDO"</span>, data_pagamento_de: <span class="op">"2026-03-01"</span>, data_pagamento_ate: <span class="op">"2026-03-31"</span> }<br>
+      &nbsp;&nbsp;&rarr; sum(<span class="var">parcelas[].pago</span>)<br><br>
+      <span class="comment">// 2. Revenue last month</span><br>
+      POST <span class="var">/v1/contas-a-receber/buscar</span><br>
+      &nbsp;&nbsp;{ status: <span class="op">"RECEBIDO"</span>, data_pagamento_de: <span class="op">"2026-02-01"</span>, data_pagamento_ate: <span class="op">"2026-02-28"</span> }<br><br>
+      <span class="comment">// 3. Aged unpaid (30+ days)</span><br>
+      POST <span class="var">/v1/contas-a-receber/buscar</span><br>
+      &nbsp;&nbsp;{ status: <span class="op">"ATRASADO"</span>, data_vencimento_ate: <span class="op">"2026-02-10"</span> }<br><br>
+      <span class="comment">// 4. Expenses by category</span><br>
+      POST <span class="var">/v1/contas-a-pagar/buscar</span><br>
+      &nbsp;&nbsp;{ data_competencia_de: <span class="op">"2026-03-01"</span>, data_competencia_ate: <span class="op">"2026-03-31"</span> }<br>
+      &nbsp;&nbsp;&rarr; groupBy(<span class="var">categorias[].id</span>).sum(<span class="var">valor</span>).sortDesc()
+    </div>
+
+    <div class="callout warn">
+      <h4>Honest Assessment</h4>
+      <p>Every part is <strong>buildable</strong>, but none comes pre-built. The API is a data access layer, not an analytics engine. No SUM, GROUP BY, or MoM comparison. But filters give precise control.</p>
+    </div>
+
+    <div class="callout info">
+      <h4>Recommendation</h4>
+      <p>Build a thin <strong>aggregation microservice</strong> that runs 4&ndash;5 queries daily, caches results, exposes a <code>/summary</code> endpoint. Feed into LLM/template for natural-language output. ~5 API calls per summary.</p>
+    </div>
+  </div>
+</details>
+
+<!-- ================================================================ -->
+<!-- #8: ANOMALY NARRATIVES -->
+<!-- ================================================================ -->
 <details class="use-case" id="uc-anomaly">
   <summary>
-    <div class="uc-icon" style="background:#ff980022;color:#ff9800">4</div>
+    <div class="uc-icon" style="background:#ff980022;color:#ff9800">&#x270E;</div>
+    <span class="uc-rank">#8</span>
     <span style="color:#ff9800">Anomaly Narratives</span>
     <span class="uc-effort" style="background:#ff980022;color:#ff9800;border:1px solid #ff980044;">Needs History</span>
     <span class="uc-score" style="color:#ff9800">~70%</span>
   </summary>
   <div class="uc-body">
     <div class="section-header">What We Build</div>
-    <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;">When unusual transactions are detected (amount outliers, timing outliers, category spikes), generate a <strong>human-readable explanation</strong> of WHY it's unusual, with context and suggested action.</p>
+    <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;">When unusual transactions are detected (amount outliers, timing outliers, category spikes), generate a <strong>human-readable explanation</strong> of WHY it's unusual, with context and suggested action. Layers on top of #6 Outlier Detection.</p>
 
     <div class="section-header">Data Sources Available via API</div>
     <table>
@@ -522,10 +913,13 @@
   </div>
 </details>
 
-<!-- UC5: CUSTOMER CHURN RISK -->
+<!-- ================================================================ -->
+<!-- #9: CUSTOMER CHURN RISK -->
+<!-- ================================================================ -->
 <details class="use-case" id="uc-churn">
   <summary>
-    <div class="uc-icon" style="background:#e91e6322;color:#e91e63">5</div>
+    <div class="uc-icon" style="background:#e91e6322;color:#e91e63">&#x21B3;</div>
+    <span class="uc-rank">#9</span>
     <span style="color:#e91e63">Customer Churn Risk</span>
     <span class="uc-effort" style="background:#ff980022;color:#ff9800;border:1px solid #ff980044;">Needs History</span>
     <span class="uc-score" style="color:#e91e63">~65%</span>
@@ -592,10 +986,13 @@
   </div>
 </details>
 
-<!-- UC6: SEASONAL PATTERN DETECTION -->
+<!-- ================================================================ -->
+<!-- #10: SEASONAL PATTERN DETECTION -->
+<!-- ================================================================ -->
 <details class="use-case" id="uc-seasonal">
   <summary>
-    <div class="uc-icon" style="background:#00968822;color:#009688">6</div>
+    <div class="uc-icon" style="background:#00968822;color:#009688">&#x223F;</div>
+    <span class="uc-rank">#10</span>
     <span style="color:#009688">Seasonal Pattern Detection</span>
     <span class="uc-effort" style="background:#ff980022;color:#ff9800;border:1px solid #ff980044;">Needs History</span>
     <span class="uc-score" style="color:#009688">~60%</span>
@@ -660,19 +1057,185 @@
   </div>
 </details>
 
+<!-- ================================================================ -->
+<!-- #11: PAYMENT REMINDERS -->
+<!-- ================================================================ -->
+<details class="use-case" id="uc-reminders">
+  <summary>
+    <div class="uc-icon" style="background:#ff980022;color:#ff9800">&#9993;</div>
+    <span class="uc-rank">#11</span>
+    <span style="color:#ff9800">Payment Reminders &amp; Notifications</span>
+    <span class="uc-effort" style="background:#ff980022;color:#ff9800;border:1px solid #ff980044;">Medium effort</span>
+    <span class="uc-score" style="color:#ff9800">~55%</span>
+  </summary>
+  <div class="uc-body">
+    <div class="callout warn">
+      <h4>Read-Only Limitation</h4>
+      <p>The API exposes rich collection and notification data but provides <strong>no write endpoints</strong>. You can see every reminder Conta Azul sent &mdash; but you can't trigger one via API.</p>
+    </div>
+
+    <div class="section-header">Architecture: Hybrid Reminder System</div>
+    <div class="arch-flow">
+      <div class="arch-box api"><div class="ab-label">Step 1 &mdash; API</div><div class="ab-title">Detect Overdue</div><div class="ab-detail">Query ATRASADO receivables</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box api"><div class="ab-label">Step 2 &mdash; API</div><div class="ab-title">Check History</div><div class="ab-detail">Read notificacao_cobranca</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box compute"><div class="ab-label">Step 3 &mdash; Logic</div><div class="ab-title">Dedup</div><div class="ab-detail">Skip if sent &lt;7 days ago</div></div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-box external"><div class="ab-label">Step 4 &mdash; External</div><div class="ab-title">Send Reminder</div><div class="ab-detail">Email / WhatsApp / SMS</div></div>
+    </div>
+
+    <div class="section-header">Collection Request Data (Read-Only)</div>
+    <table>
+      <tr><th>Field</th><th>Description</th><th>Useful For</th></tr>
+      <tr><td><code>tipo_solicitacao_cobranca</code></td><td>BOLETO, LINK_PAGAMENTO, BOLETO_REGISTRADO, PIX_COBRANCA</td><td>Collection method used</td></tr>
+      <tr><td><code>status_solicitacao_cobranca</code></td><td>12 statuses: AGUARDANDO_CONFIRMACAO through EXTORNADO</td><td>Track lifecycle</td></tr>
+      <tr><td><code>url</code></td><td>Payment URL (for links / PIX QR)</td><td>Include in reminder</td></tr>
+      <tr><td><code>linha_digitavel</code></td><td>Boleto barcode line</td><td>Include in reminder</td></tr>
+      <tr><td><code>data_vencimento</code></td><td>Due date on collection document</td><td>Check if expired</td></tr>
+      <tr><td><code>data_quitacao</code></td><td>Settlement date (if paid)</td><td>Confirm payment</td></tr>
+    </table>
+
+    <div class="section-header">Notification Schemas (All Read-Only)</div>
+    <table>
+      <tr><th style="width:22%;">Schema</th><th style="width:10%;">API</th><th style="width:10%;">Write?</th><th style="width:58%;">What You Get</th></tr>
+      <tr><td><code>NotificacaoCobranca</code></td><td>Financial</td><td><span class="badge gap">No</span></td><td>Fields: <code>assunto</code>, <code>corpo</code>, <code>enviado_em</code>, <code>aberto_em</code>, <code>auto_notificacao</code></td></tr>
+      <tr><td><code>ItemNotificacaoCobranca</code></td><td>Financial</td><td><span class="badge gap">No</span></td><td>Per-channel: <code>email</code>, <code>sms</code>, <code>whatsapp</code>. Status: <code>ENVIADO</code> or <code>INVALIDO</code></td></tr>
+      <tr><td><code>Notificacao</code></td><td>Sales</td><td><span class="badge gap">No</span></td><td>Sales notifications: <code>enviado_para</code>, <code>enviado_em</code>, <code>aberto_em</code>, <code>status</code></td></tr>
+      <tr><td><code>SolicitacaoCobranca</code></td><td>Financial</td><td><span class="badge gap">No</span></td><td>Collection lifecycle: <code>AGUARDANDO_CONFIRMACAO</code> &rarr; <code>REGISTRADO</code> &rarr; <code>QUITADO</code>/<code>CANCELADO</code></td></tr>
+    </table>
+
+    <div class="insight-row">
+      <div class="insight-card" style="border-color:#4caf5066;">
+        <h4 style="color:#4caf50;">What You CAN Do via API</h4>
+        <ul>
+          <li>Detect all overdue receivables with full detail</li>
+          <li>See every reminder Conta Azul already sent</li>
+          <li>Check delivery status per channel (email, SMS, WhatsApp)</li>
+          <li>See when customer opened the notification</li>
+          <li>Get payment URLs and boleto barcodes for external reminders</li>
+          <li>Look up customer contact info</li>
+        </ul>
+      </div>
+      <div class="insight-card" style="border-color:#f4433666;">
+        <h4 style="color:#f44336;">What You CANNOT Do via API</h4>
+        <ul>
+          <li>Send a payment reminder email</li>
+          <li>Trigger SMS or WhatsApp notification</li>
+          <li>Create or schedule billing notifications</li>
+          <li>Generate boleto or PIX cobranca programmatically</li>
+          <li>Cancel or resend failed notifications</li>
+        </ul>
+        <div class="ic-note">All sending requires Conta Azul web UI or external services (SendGrid, Twilio).</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>API Gap &mdash; No Write Access for Notifications</h4>
+      <p>The 3 Financial API POSTs create cost centers, receivables, and payables only. None trigger notifications.</p>
+      <ul>
+        <li><strong>Workaround:</strong> Build your own sender using API data + external channel (SendGrid, Twilio).</li>
+        <li><strong>Caveat:</strong> Self-sent notifications won't appear in Conta Azul's history.</li>
+      </ul>
+    </div>
+  </div>
+</details>
+
+<!-- ================================================================ -->
+<!-- #12: BATCH & PAGINATION -->
+<!-- ================================================================ -->
+<details class="use-case" id="uc-batch">
+  <summary>
+    <div class="uc-icon" style="background:#78909c22;color:#78909c">&#x2699;</div>
+    <span class="uc-rank">#12</span>
+    <span style="color:#78909c">Batch &amp; Pagination Analysis</span>
+    <span class="uc-effort" style="background:#78909c22;color:#78909c;border:1px solid #78909c44;">Workarounds needed</span>
+    <span class="uc-score" style="color:#78909c">~30%</span>
+  </summary>
+  <div class="uc-body">
+    <div class="callout">
+      <h4>Zero Financial Batch Endpoints</h4>
+      <p>No batch/bulk endpoints for financial data. Every record must be handled individually or via paginated search. Batch only exists for Person and Sales APIs.</p>
+    </div>
+
+    <div class="section-header">What Batch Operations Exist</div>
+    <table>
+      <tr><th>API</th><th>Operation</th><th>Endpoint</th><th>Useful For</th></tr>
+      <tr><td><span class="badge full">Person</span></td><td>Batch activate</td><td><code>POST /v1/pessoas/ativar</code></td><td>Activate multiple suppliers/customers</td></tr>
+      <tr><td><span class="badge full">Person</span></td><td>Batch deactivate</td><td><code>POST /v1/pessoas/desativar</code></td><td>Deactivate multiple people</td></tr>
+      <tr><td><span class="badge full">Person</span></td><td>Batch delete</td><td><code>POST /v1/pessoas/excluir</code></td><td>Delete multiple people</td></tr>
+      <tr><td><span class="badge full">Sales</span></td><td>Batch delete</td><td><code>POST /v1/venda/excluir</code></td><td>Delete multiple sales</td></tr>
+      <tr><td><span class="badge gap">Financial</span></td><td>&mdash;</td><td>&mdash;</td><td>No batch endpoints</td></tr>
+      <tr><td><span class="badge gap">Contracts</span></td><td>&mdash;</td><td>&mdash;</td><td>No batch endpoints</td></tr>
+      <tr><td><span class="badge gap">Invoice</span></td><td>&mdash;</td><td>&mdash;</td><td>No batch endpoints</td></tr>
+    </table>
+
+    <div class="section-header">Pagination Limits by API</div>
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <tr><th style="text-align:left">Endpoint</th><th>Max Page</th><th>Default</th><th>Impact</th></tr>
+        <tr><td style="text-align:left"><code>contas-a-receber/buscar</code></td><td>1,000</td><td>50</td><td style="text-align:left;color:#4caf50;">Best &mdash; few pages needed</td></tr>
+        <tr><td style="text-align:left"><code>contas-a-pagar/buscar</code></td><td>1,000</td><td>50</td><td style="text-align:left;color:#4caf50;">Best &mdash; few pages needed</td></tr>
+        <tr><td style="text-align:left"><code>/v1/venda/busca</code></td><td>50</td><td>25</td><td style="text-align:left;color:#ff9800;">Slow &mdash; many pages</td></tr>
+        <tr><td style="text-align:left"><code>/v1/contratos</code></td><td>50</td><td>25</td><td style="text-align:left;color:#ff9800;">Limited throughput</td></tr>
+        <tr><td style="text-align:left"><code>/v1/notas-fiscais</code></td><td>100</td><td>25</td><td style="text-align:left;color:#ff9800;">Moderate</td></tr>
+        <tr><td style="text-align:left"><code>/v1/pessoas</code></td><td>250</td><td>50</td><td style="text-align:left;color:#4caf50;">Good for master data</td></tr>
+      </table>
+    </div>
+
+    <div class="section-header">Multi-ID Array Filters (Pseudo-Batch Reads)</div>
+    <p style="font-size:13px;color:#b0c4d8;margin-bottom:16px;">Financial search APIs accept <strong>arrays of IDs</strong> as filters for efficient multi-entity queries:</p>
+    <table>
+      <tr><th>Filter</th><th>Type</th><th>Available On</th><th>Use</th></tr>
+      <tr><td><code>ids_clientes</code></td><td>array[UUID]</td><td>Receivables, Payables</td><td>Multiple customers in one call</td></tr>
+      <tr><td><code>ids_fornecedores</code></td><td>array[UUID]</td><td>Payables</td><td>Multiple suppliers in one call</td></tr>
+      <tr><td><code>ids_categorias</code></td><td>array[UUID]</td><td>Receivables, Payables</td><td>Multiple categories at once</td></tr>
+      <tr><td><code>ids_centros_de_custo</code></td><td>array[UUID]</td><td>Receivables, Payables</td><td>Multiple cost centers</td></tr>
+      <tr><td><code>ids_contas_financeiras</code></td><td>array[UUID]</td><td>Receivables, Payables</td><td>Multiple bank accounts</td></tr>
+    </table>
+
+    <div class="callout warn">
+      <h4>Rate Limits &mdash; Undocumented</h4>
+      <p>HTTP 429 returned but threshold not documented. Start at 2&ndash;3 req/sec, exponential backoff on 429. Use incremental sync via <code>data_alteracao_de/ate</code>. Cache static data locally.</p>
+    </div>
+
+    <div class="insight-row">
+      <div class="insight-card" style="border-color:#4caf5066;">
+        <h4 style="color:#4caf50">Efficient Patterns</h4>
+        <ul>
+          <li>Set <code>quantidade_registros=1000</code> on financial endpoints</li>
+          <li>Use multi-ID filters to combine N queries into 1</li>
+          <li>Incremental sync via <code>data_alteracao_de/ate</code></li>
+          <li>Cache categories, cost centers, accounts</li>
+        </ul>
+      </div>
+      <div class="insight-card" style="border-color:#f4433666;">
+        <h4 style="color:#f44336">Known Bottlenecks</h4>
+        <ul>
+          <li>Sales API: 50/page max &mdash; 1,000 sales = 20 pages</li>
+          <li><code>parcelas/{id}</code>: 1 per call &mdash; N+1 problem</li>
+          <li>No parallel batch creates for financials</li>
+          <li>Contracts: 50/page, limited filtering</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</details>
+
 <!-- CROSS-CUTTING: API LIMITATIONS -->
 <div class="divider"></div>
 
-<div class="section-header"><span style="color:#b0c4d8">Cross-Cutting: API Limitations for AI/ML</span></div>
+<div class="section-header"><span style="color:#b0c4d8">Cross-Cutting: API Limitations</span></div>
 <div class="callout">
-  <h4>Key Gaps Affecting All AI/ML Use Cases</h4>
+  <h4>Key Gaps Affecting All Use Cases</h4>
   <ul>
-    <li><strong>No webhooks</strong> &mdash; must poll for new/changed data. Real-time ML triggers require periodic sync.</li>
+    <li><strong>No webhooks</strong> &mdash; must poll for new/changed data. Real-time triggers require periodic sync.</li>
     <li><strong>No server-side aggregation</strong> &mdash; all sums, averages, and distributions computed client-side.</li>
     <li><strong>No audit log</strong> &mdash; no "who changed what" data. Limits anomaly root-cause analysis.</li>
     <li><strong>No budget data</strong> &mdash; cannot compare actual vs planned. Limits anomaly context.</li>
     <li><strong>Rate limits undocumented</strong> &mdash; HTTP 429 returned at unknown threshold. Build with exponential backoff.</li>
     <li><strong>No feedback API</strong> &mdash; ML models can't learn from user corrections via the API. Build feedback loop externally.</li>
+    <li><strong>No notification write access</strong> &mdash; read-only for all reminder/collection data. External sending required.</li>
   </ul>
 </div>
 
@@ -686,21 +1249,24 @@
   </ul>
 </div>
 
-<!-- DATA READINESS MATRIX -->
+<!-- FILTER POWER MATRIX -->
 <div class="divider"></div>
 
-<div class="section-header"><span style="color:#b0c4d8">Data Readiness by Use Case</span></div>
+<div class="section-header"><span style="color:#b0c4d8">Cross-Cutting: Filter Power Matrix</span></div>
 <div class="matrix-wrap">
   <table class="matrix">
-    <tr><th style="text-align:left">Data Source</th><th>Collections</th><th>Scoring</th><th>Classification</th><th>Anomaly</th><th>Churn</th><th>Seasonal</th></tr>
-    <tr><td>Receivables (AR)</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td></tr>
-    <tr><td>Payables (AP)</td><td><span class="cross">&times;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td><td><span class="check">&check;</span></td></tr>
-    <tr><td>Parcelas (installments)</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td></tr>
-    <tr><td>Categories (123)</td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td><td><span class="check">&check;</span></td></tr>
-    <tr><td>Pessoas (entities)</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td></tr>
-    <tr><td>Contracts</td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td></tr>
-    <tr><td>Sales</td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td></tr>
-    <tr><td>Historical depth needed</td><td>3 mo</td><td>6 mo</td><td>3 mo</td><td>12 mo</td><td>6&ndash;12 mo</td><td>12+ mo</td></tr>
+    <tr><th style="text-align:left">Filter</th><th>Receivables</th><th>Payables</th><th>Sales</th><th>Contracts</th></tr>
+    <tr><td>Due date range</td><td><span class="check">&check;</span> req</td><td><span class="check">&check;</span> req</td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td></tr>
+    <tr><td>Accrual date</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td></tr>
+    <tr><td>Payment date</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td></tr>
+    <tr><td>Last modified</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td></tr>
+    <tr><td>Amount range</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td></tr>
+    <tr><td>Status</td><td><span class="check">&check;</span> 6</td><td><span class="check">&check;</span> 6</td><td><span class="check">&check;</span> 6</td><td><span class="check">&check;</span> 2</td></tr>
+    <tr><td>Customer/Supplier</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td></tr>
+    <tr><td>Category IDs</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td></tr>
+    <tr><td>Cost center</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="cross">&times;</span></td><td><span class="cross">&times;</span></td></tr>
+    <tr><td>Text search</td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td><td><span class="check">&check;</span></td></tr>
+    <tr><td>Max page size</td><td>1000</td><td>1000</td><td>50</td><td>50</td></tr>
   </table>
 </div>
 
@@ -712,33 +1278,60 @@
   <div class="rm-phase p1">
     <div class="rm-num">1</div>
     <div class="rm-body">
-      <div class="rm-title">Collections Prioritization + Payment Scoring</div>
-      <div class="rm-time">2&ndash;3 weeks &middot; Quick wins</div>
-      <div class="rm-desc">Immediate value from existing API data. Collections uses overdue AR data directly. Scoring builds on the same receivables/payables history. Both share the <code>parcelas/{id}</code> data pipeline.</div>
+      <div class="rm-title">Outstanding + Collections + Scoring</div>
+      <div class="rm-time">2&ndash;3 weeks &middot; Highest value, lowest effort</div>
+      <div class="rm-desc">Aging dashboard (#1), recovery prioritization (#2), and reliability scores (#4). All use the same AR/AP + parcelas data pipeline. Cashflow forecasting (#3) follows naturally.</div>
     </div>
   </div>
   <div class="rm-phase p2">
     <div class="rm-num">2</div>
     <div class="rm-body">
-      <div class="rm-title">Smart Classification + Anomaly Narratives</div>
+      <div class="rm-title">Classification + Outlier Detection + Revenue Summary</div>
       <div class="rm-time">3&ndash;4 weeks &middot; Medium effort</div>
-      <div class="rm-desc">Classification can start immediately with existing labeled data (historical transactions + categories). Anomaly narratives layer on top of the statistical baselines built in Phase 1's data pipeline.</div>
+      <div class="rm-desc">Smart classification (#5) starts immediately with labeled training data. Outlier detection (#6) builds statistical baselines from Phase 1's pipeline. Revenue summary (#7) adds aggregation layer.</div>
     </div>
   </div>
   <div class="rm-phase p3">
     <div class="rm-num">3</div>
     <div class="rm-body">
-      <div class="rm-title">Churn Risk + Seasonal Patterns</div>
-      <div class="rm-time">4&ndash;6 weeks &middot; Needs historical data</div>
-      <div class="rm-desc">Both require 6&ndash;12+ months of accumulated data. Start the data pipeline in Phase 1, but models become useful only after enough history accumulates. Seasonal detection improves cashflow forecasting accuracy.</div>
+      <div class="rm-title">Anomaly Narratives + Churn + Seasonal</div>
+      <div class="rm-time">4&ndash;6 weeks &middot; Needs historical depth</div>
+      <div class="rm-desc">Anomaly narratives (#8) layer LLM on Phase 2's outlier detection. Churn (#9) and seasonal (#10) require 6&ndash;12+ months of accumulated data. Start the pipeline early, activate models when data matures.</div>
+    </div>
+  </div>
+  <div class="rm-phase p4">
+    <div class="rm-num">4</div>
+    <div class="rm-body">
+      <div class="rm-title">Payment Reminders + Batch Optimization</div>
+      <div class="rm-time">Ongoing &middot; External integration</div>
+      <div class="rm-desc">Reminders (#11) require external sending (SendGrid, Twilio) since the API is read-only. Batch optimization (#12) is an ongoing engineering concern &mdash; workarounds improve as data volumes grow.</div>
     </div>
   </div>
 </div>
 
+<!-- KEY ENDPOINT REFERENCE -->
+<div class="divider"></div>
+
+<div class="section-header"><span style="color:#b0c4d8">Key Endpoint Reference</span></div>
+<table>
+  <tr><th>Endpoint</th><th>Method</th><th>Purpose</th><th>Used By</th></tr>
+  <tr><td><code>/v1/financeiro/.../contas-a-receber/buscar</code></td><td><span class="badge full">GET</span></td><td>Search receivables</td><td>#1&ndash;#10 (all insights)</td></tr>
+  <tr><td><code>/v1/financeiro/.../contas-a-pagar/buscar</code></td><td><span class="badge full">GET</span></td><td>Search payables</td><td>#1, #3, #4, #5, #6, #7, #8, #10</td></tr>
+  <tr><td><code>/v1/financeiro/.../parcelas/{id}</code></td><td><span class="badge full">GET</span></td><td>Installment detail</td><td>#1, #2, #4, #6, #8, #9, #11</td></tr>
+  <tr><td><code>/v1/conta-financeira/{id}/saldo-atual</code></td><td><span class="badge full">GET</span></td><td>Account balance</td><td>#3</td></tr>
+  <tr><td><code>/v1/financeiro/transferencias</code></td><td><span class="badge full">GET</span></td><td>Transfers</td><td>#3, #6</td></tr>
+  <tr><td><code>/v1/categorias</code></td><td><span class="badge full">GET</span></td><td>123 categories</td><td>#5, #6, #7, #8</td></tr>
+  <tr><td><code>/v1/financeiro/categorias-dre</code></td><td><span class="badge full">GET</span></td><td>P&amp;L structure</td><td>#3, #6, #7</td></tr>
+  <tr><td><code>/v1/centro-de-custo</code></td><td><span class="badge full">GET</span></td><td>Cost centers</td><td>#1, #3, #6</td></tr>
+  <tr><td><code>/v1/venda/busca</code></td><td><span class="badge full">GET</span></td><td>Search sales</td><td>#3, #6, #9, #10</td></tr>
+  <tr><td><code>/v1/contratos</code></td><td><span class="badge full">GET</span></td><td>Recurring contracts</td><td>#3, #9, #10</td></tr>
+  <tr><td><code>/v1/pessoas</code></td><td><span class="badge full">GET</span></td><td>Contact info</td><td>#2, #4, #5, #11</td></tr>
+</table>
+
 </div>
 
 <footer>
-  <p>Conta Azul AI/ML Use Cases &middot; Based on API v1 specifications &middot; Generated 2026-03-12</p>
+  <p>Conta Azul Insights &amp; AI/ML Use Cases &middot; Based on API v1 specifications &middot; Generated 2026-03-12</p>
 </footer>
 
 <script>
