@@ -379,6 +379,19 @@
       <tr><td><code>fatura</code></td><td>Linked invoice (NFe/NFS-e number and type)</td></tr>
       <tr><td><code>conciliado</code></td><td>Whether reconciled with bank (boolean, read-only)</td></tr>
     </table>
+
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Marcos &mdash; 30 client portfolios</div>
+        <p>Opens a single aging dashboard every Monday. Instantly sees which clients have overdue invoices piling up, grouped by 1&ndash;30, 31&ndash;60, and 60+ day buckets &mdash; no spreadsheet assembly needed.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Lucia &mdash; Morning cash check</div>
+        <p>Starts the day knowing exactly how much is outstanding, who owes what, and which invoices are about to become overdue. Prioritizes follow-up calls before the first coffee gets cold.</p>
+      </div>
+    </div>
   </div>
 </details>
 
@@ -529,6 +542,19 @@
     <div class="callout info">
       <h4>Pagination</h4>
       <p>Financial endpoints support up to <strong>1,000 records/page</strong>. For a mid-size business, a single page per direction suffices. Contracts endpoint maxes at <strong>50/page</strong>.</p>
+    </div>
+
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Patricia &mdash; Weekly client projections</div>
+        <p>Generates 4-week cashflow forecasts for each client every Monday. Catches a R$40k shortfall coming in week 3 for a retail client &mdash; advises them to arrange a credit line now instead of scrambling later.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Eduardo &mdash; Planning ahead</div>
+        <p>Sees a rolling 30-day forecast on his dashboard. Notices that next week's payables exceed expected receivables by R$15k. Delays a non-urgent supplier payment to avoid dipping below his safety margin.</p>
+      </div>
     </div>
   </div>
 </details>
@@ -770,6 +796,19 @@
         <li>No budget data &mdash; can't compare actuals vs budgets</li>
       </ul>
     </div>
+
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Rafael &mdash; Pre-close review</div>
+        <p>Before monthly close, runs the outlier check across all clients. Catches a R$18k supplier invoice filed under "Office Supplies" that should be "Equipment" &mdash; flags it before it distorts the P&amp;L.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Camila &mdash; Expense alert</div>
+        <p>Gets a notification that "Marketing" spending is 3x the monthly average. Investigates &mdash; turns out a duplicate payment was processed. Catches it within days instead of discovering it at quarter-end.</p>
+      </div>
+    </div>
   </div>
 </details>
 
@@ -835,6 +874,19 @@
     <div class="callout info">
       <h4>Recommendation</h4>
       <p>Build a thin <strong>aggregation microservice</strong> that runs 4&ndash;5 queries daily, caches results, exposes a <code>/summary</code> endpoint. Feed into LLM/template for natural-language output. ~5 API calls per summary.</p>
+    </div>
+
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Beatriz &mdash; Client monthly reports</div>
+        <p>Sends each client a 3-sentence plain-language summary every month: "Receita de R$52k, alta de 8% sobre fevereiro. R$6.200 em cobran&ccedil;as vencidas h&aacute; mais de 30 dias. Maior despesa: log&iacute;stica com R$14k." No one needs to open a spreadsheet.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Thiago &mdash; Quick pulse check</div>
+        <p>Opens the app and reads a snapshot: revenue up, expenses steady, one category spiked. Gets the full picture in 10 seconds without digging through line items.</p>
+      </div>
     </div>
   </div>
 </details>
@@ -1137,6 +1189,19 @@
         <li><strong>Caveat:</strong> Self-sent notifications won't appear in Conta Azul's history.</li>
       </ul>
     </div>
+
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Daniela &mdash; Automated follow-ups</div>
+        <p>Sets up a pipeline that detects overdue invoices via API, checks if Conta Azul already sent a reminder, and fires a polite WhatsApp message via Twilio if not. Clients pay faster, she follows up less.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Felipe &mdash; No more awkward calls</div>
+        <p>Customers receive professional, timely reminders 3 and 7 days after an invoice goes overdue. Most pay before Felipe ever has to pick up the phone &mdash; and when he does, the reminder history is right there.</p>
+      </div>
+    </div>
   </div>
 </details>
 
@@ -1216,6 +1281,19 @@
           <li>No parallel batch creates for financials</li>
           <li>Contracts: 50/page, limited filtering</li>
         </ul>
+      </div>
+    </div>
+
+    <div class="examples-row">
+      <div class="example-card accountant">
+        <div class="ec-label">Accountant</div>
+        <div class="ec-name">Renata &mdash; 45 client sync</div>
+        <p>Uses multi-ID array filters to pull receivables for all 45 clients in a handful of API calls instead of 45 separate requests. Monthly data refresh runs in minutes, not hours.</p>
+      </div>
+      <div class="example-card owner">
+        <div class="ec-label">Business Owner</div>
+        <div class="ec-name">Gustavo &mdash; Nightly data pipeline</div>
+        <p>An overnight job syncs all financial data using incremental <code>data_alteracao</code> filters. By morning, dashboards are fresh &mdash; and the API rate limit is never hit because only changed records are fetched.</p>
       </div>
     </div>
   </div>
